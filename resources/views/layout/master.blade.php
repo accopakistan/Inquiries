@@ -4,15 +4,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
     <title>ACCO | Inquiry Management Portal</title>
-    
+
     <!-- Bootstrap 5 & Icons -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-    
+
     <!-- Custom Style Sheet -->
     <link rel="stylesheet" href="@modernAsset('css/modern_custom.css')?v={{ time() }}">
     <link rel="icon" type="image/png" href="@modernAsset('assets/img/Favicon.png')">
-    
+
     @stack('styles')
 </head>
 <body>
@@ -33,7 +33,7 @@
                 <img src="@modernAsset('assets/img/accoLogo.png')" class="logo-dark-theme-hide" alt="ACCO Logo">
                 <img src="@modernAsset('assets/img/Logo.png')" class="logo-light-theme-hide" alt="ACCO Logo">
             </a>
-            
+
             <ul class="sidebar-menu">
                 <li class="sidebar-header">Core Actions</li>
                 <li>
@@ -67,7 +67,7 @@
                         </ul>
                     @endif
                 </li>
-                
+
                 <li class="sidebar-header">Filters</li>
                 <li>
                     <a href="/today-followups" class="menu-item {{ Request::is('today-followups') ? 'active' : '' }}">
@@ -79,14 +79,14 @@
                         <i class="bi bi-exclamation-triangle"></i> Most Important
                     </a>
                 </li>
-                
+
                 <li class="sidebar-header">Management</li>
                 <li>
                     <a href="/project-type" class="menu-item {{ Request::is('project-type') || Request::is('add-project-type') || Request::is('update-project-type/*') ? 'active' : '' }}">
                         <i class="bi bi-tags"></i> Project Categories
                     </a>
                 </li>
-                
+
                 <li class="sidebar-header">Quick Creation</li>
                 <li>
                     <a href="/add-inquiry" class="menu-item {{ Request::is('add-inquiry') ? 'active' : '' }}">
@@ -98,8 +98,14 @@
                         <i class="bi bi-folder-plus"></i> Add Category
                     </a>
                 </li>
+                <li class="sidebar-header">Calculators</li>
+                <li>
+                    <a href="/house-construction-cost-calculator" class="menu-item {{ Request::is('house-construction-cost-calculator') ? 'active' : '' }}">
+                        <i class="bi bi-calculator"></i> House Calculator
+                    </a>
+                </li>
             </ul>
-            
+
             <div class="sidebar-footer">
                 <form method="POST" action="{{ route('logout') }}">
                     @csrf
@@ -117,7 +123,7 @@
                 <div class="d-flex align-items-center gap-3">
                     <h4 class="mb-0 display-font d-none d-md-block" style="font-weight: 700; letter-spacing: -0.02em;">Ahmed Construction Company</h4>
                 </div>
-                
+
                 <div class="d-flex align-items-center gap-3">
                     <!-- Global Search -->
                     <form class="d-none d-md-flex align-items-center gap-2" method="GET" action="{{ url('/inquiries') }}">
@@ -129,7 +135,7 @@
                     <button class="theme-switch-btn" id="theme-toggle-btn" title="Toggle Theme">
                         <i class="bi bi-moon-stars"></i>
                     </button>
-                    
+
                     <!-- User Section -->
                     <div class="navbar-user-section dropdown">
                         <button class="navbar-user-trigger" data-bs-toggle="dropdown" aria-expanded="false">
@@ -151,13 +157,13 @@
                     </div>
                 </div>
             </nav>
-            
+
             <!-- Page Content -->
             <div class="page-container">
                 @yield('content')
             </div>
         </div>
-        
+
         <!-- Mobile Bottom Navigation Bar -->
         <nav class="mobile-nav-bar">
             <a href="/" class="mobile-nav-item {{ Request::is('/') ? 'active' : '' }}">
@@ -177,29 +183,29 @@
                 <span>Important</span>
             </a>
         </nav>
-        
+
         <!-- Mobile FAB (Floating Action Button) for adding inquiry -->
         <a href="/add-inquiry" class="mobile-fab" title="Add Inquiry">
             <i class="bi bi-plus-lg"></i>
         </a>
     </div>
-    
+
     <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
-    
+
     <!-- Local Storage Theme Manager Script -->
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const themeToggleBtn = document.getElementById('theme-toggle-btn');
             const htmlElement = document.documentElement;
-            
+
             // Sync initial state
             if (htmlElement.classList.contains('dark-theme')) {
                 themeToggleBtn.innerHTML = '<i class="bi bi-sun"></i>';
             } else {
                 themeToggleBtn.innerHTML = '<i class="bi bi-moon-stars"></i>';
             }
-            
+
             themeToggleBtn.addEventListener('click', () => {
                 if (htmlElement.classList.contains('dark-theme')) {
                     htmlElement.classList.remove('dark-theme');
@@ -213,7 +219,7 @@
             });
         });
     </script>
-    
+
     @stack('scripts')
 </body>
 </html>

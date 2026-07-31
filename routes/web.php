@@ -1,9 +1,9 @@
 <?php
 
-use App\Http\Controllers\InquiryController;
-use App\Http\Controllers\ProjectTypeController;
-use App\Http\Controllers\LoginController;
 use App\Http\Controllers\FollowupController;
+use App\Http\Controllers\InquiryController;
+use App\Http\Controllers\LoginController;
+use App\Http\Controllers\ProjectTypeController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -16,7 +16,6 @@ use Illuminate\Support\Facades\Route;
 | contains the "web" middleware group. Now create something great!
 |
 */
-
 
 Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
 Route::post('/login', [LoginController::class, 'login']);
@@ -53,4 +52,5 @@ Route::middleware(['login'])->group(function () {
     Route::post('/inquiries/{inquiry}/followups', [FollowupController::class, 'store'])->name('followups.store');
     Route::get('/today-followups', [InquiryController::class, 'todayFollowups'])->name('today.followups');
     Route::get('/most-important', [InquiryController::class, 'mostImportant'])->name('most-important');
+    Route::view('/house-construction-cost-calculator', 'house-construction-cost')->name('house-construction-cost-calculator');
 });
