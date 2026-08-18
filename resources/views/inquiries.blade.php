@@ -63,7 +63,7 @@
             <i class="bi bi-check-circle-fill"></i>
             <span>{{ session('success') }}</span>
         </div>
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close" style="filter: var(--text-primary) == '#f8fafc' ? 'invert(1)' : 'none';"></button>
+        <button type="button" class="btn-close theme-aware-close" data-bs-dismiss="alert" aria-label="Close"></button>
     </div>
 @endif
 

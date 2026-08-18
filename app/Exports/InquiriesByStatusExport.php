@@ -68,7 +68,7 @@ class InquiriesByStatusExport implements FromCollection, WithHeadings, WithStyle
                 'name' => 'Calibri',
                 'size' => 16,
                 'bold' => true,
-                'color' => ['rgb' => '1F4E78'],
+                'color' => ['rgb' => '3858E9'],
             ],
             'alignment' => [
                 'horizontal' => Alignment::HORIZONTAL_LEFT,
@@ -82,7 +82,7 @@ class InquiriesByStatusExport implements FromCollection, WithHeadings, WithStyle
                 'name' => 'Calibri',
                 'size' => 12,
                 'italic' => true,
-                'color' => ['rgb' => '4472C4'],
+                'color' => ['rgb' => '474747'],
             ],
             'alignment' => [
                 'horizontal' => Alignment::HORIZONTAL_LEFT,
@@ -94,7 +94,7 @@ class InquiriesByStatusExport implements FromCollection, WithHeadings, WithStyle
             'font' => [
                 'name' => 'Calibri',
                 'size' => 10,
-                'color' => ['rgb' => '595959'],
+                'color' => ['rgb' => '909999'],
             ],
             'alignment' => [
                 'horizontal' => Alignment::HORIZONTAL_LEFT,
@@ -112,11 +112,11 @@ class InquiriesByStatusExport implements FromCollection, WithHeadings, WithStyle
                 'name' => 'Calibri',
                 'size' => 11,
                 'bold' => true,
-                'color' => ['rgb' => 'FFFFFF'],
+                'color' => ['rgb' => 'E0F2F1'],
             ],
             'fill' => [
                 'fillType' => Fill::FILL_SOLID,
-                'color' => ['rgb' => '203864'],
+                'color' => ['rgb' => '3858E9'],
             ],
             'alignment' => [
                 'horizontal' => Alignment::HORIZONTAL_CENTER,
@@ -126,7 +126,7 @@ class InquiriesByStatusExport implements FromCollection, WithHeadings, WithStyle
             'borders' => [
                 'allBorders' => [
                     'borderStyle' => Border::BORDER_THIN,
-                    'color' => ['rgb' => '000000'],
+                    'color' => ['rgb' => '474747'],
                 ],
             ],
         ]);
@@ -140,13 +140,13 @@ class InquiriesByStatusExport implements FromCollection, WithHeadings, WithStyle
 
         for ($row = 5; $row <= $lastRow; $row++) {
             // Alternating row colors
-            $fillColor = ($row % 2 === 0) ? 'F2F2F2' : 'FFFFFF';
+            $fillColor = ($row % 2 === 0) ? 'CEDDDD' : 'E0F2F1';
 
             $sheet->getStyle('A' . $row . ':F' . $row)->applyFromArray([
                 'font' => [
                     'name' => 'Calibri',
                     'size' => 10,
-                    'color' => ['rgb' => '000000'],
+                    'color' => ['rgb' => '474747'],
                 ],
                 'fill' => [
                     'fillType' => Fill::FILL_SOLID,
@@ -160,7 +160,7 @@ class InquiriesByStatusExport implements FromCollection, WithHeadings, WithStyle
                 'borders' => [
                     'allBorders' => [
                         'borderStyle' => Border::BORDER_THIN,
-                        'color' => ['rgb' => 'CCCCCC'],
+                        'color' => ['rgb' => 'B2BFBE'],
                     ],
                 ],
             ]);

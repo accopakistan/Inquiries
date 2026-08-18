@@ -5,36 +5,46 @@
 :root {
     --font-sans: 'Inter', sans-serif;
     --font-heading: 'Outfit', sans-serif;
-    
+
+    /* Brand palette — the only 3 base colors used across the app.
+       Every other token below is derived from these three. No pure
+       #ffffff or #000000 is used anywhere in this stylesheet. */
+    --brand-accent: #3858E9;
+    --brand-ink: #474747;    /* replaces black */
+    --brand-surface: #E0F2F1; /* replaces white */
+
     /* Light Mode */
-    --bg-primary: #f5f7fb;
-    --bg-sidebar: rgba(255, 255, 255, 0.85);
-    --bg-navbar: rgba(255, 255, 255, 0.75);
-    --bg-surface: rgba(255, 255, 255, 0.7);
-    --bg-surface-solid: #ffffff;
-    --bg-light: #f8fafc;
-    
-    --border-color: rgba(226, 232, 240, 0.8);
-    --border-hover: rgba(203, 213, 225, 1);
-    
-    --text-primary: #0f172a;
-    --text-secondary: #475569;
-    --text-muted: #94a3b8;
-    
-    --accent-color: #71277A; /* Brand Purple */
-    --accent-hover: #571e5e;
-    --accent-rgb: 113, 39, 122;
-    
+    --bg-primary: #D4E4E3;
+    --bg-sidebar: rgba(224, 242, 241, 0.85);
+    --bg-navbar: rgba(224, 242, 241, 0.75);
+    --bg-surface: rgba(224, 242, 241, 0.7);
+    --bg-surface-solid: #E0F2F1;
+    --bg-light: #CEDDDD;
+
+    --border-color: rgba(71, 71, 71, 0.15);
+    --border-hover: rgba(71, 71, 71, 0.28);
+
+    --text-primary: #474747;
+    --text-secondary: #696D6C;
+    --text-muted: #909999;
+
+    --accent-color: #3858E9; /* Brand Blue */
+    --accent-hover: #3B55C9;
+    --accent-rgb: 56, 88, 233;
+
+    --text-on-accent: #E0F2F1;
+
     --success-color: #10b981;
     --warning-color: #f59e0b;
     --danger-color: #ef4444;
     --info-color: #06b6d4;
-    --dark-color: #1e293b;
-    
-    --shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
-    --shadow-md: 0 4px 18px -4px rgba(0, 0, 0, 0.08), 0 2px 6px -2px rgba(0, 0, 0, 0.04);
-    --shadow-lg: 0 12px 30px -8px rgba(0, 0, 0, 0.12);
-    
+    --not-responding-color: #c2410c;
+    --dark-color: #474747;
+
+    --shadow-sm: 0 1px 2px rgba(71,71,71,0.05);
+    --shadow-md: 0 4px 18px -4px rgba(71, 71, 71, 0.08), 0 2px 6px -2px rgba(71, 71, 71, 0.04);
+    --shadow-lg: 0 12px 30px -8px rgba(71, 71, 71, 0.12);
+
     --glass-blur: 12px;
     --border-radius-sm: 6px;
     --border-radius-md: 10px;
@@ -43,34 +53,37 @@
 }
 
 html.dark-theme {
-    /* Dark Theme Custom Accent Adjustments */
-    --bg-primary: #0a0e1a;
-    --bg-sidebar: rgba(17, 24, 39, 0.85);
-    --bg-navbar: rgba(10, 14, 26, 0.75);
-    --bg-surface: rgba(17, 24, 39, 0.65);
-    --bg-surface-solid: #111827;
-    --bg-light: #1f2937;
-    
-    --border-color: rgba(255, 255, 255, 0.07);
-    --border-hover: rgba(255, 255, 255, 0.15);
-    
-    --text-primary: #f8fafc;
-    --text-secondary: #cbd5e1;
-    --text-muted: #64748b;
-    
-    --accent-color: #9f36ad; /* Brighter purple for dark contrast */
-    --accent-hover: #bd4fcb;
-    --accent-rgb: 159, 54, 173;
-    
+    /* Dark Theme — same 3-color brand palette, layered darker */
+    --bg-primary: #474747;
+    --bg-sidebar: rgba(102, 105, 105, 0.85);
+    --bg-navbar: rgba(71, 71, 71, 0.75);
+    --bg-surface: rgba(102, 105, 105, 0.65);
+    --bg-surface-solid: #666969;
+    --bg-light: #757A7A;
+
+    --border-color: rgba(224, 242, 241, 0.10);
+    --border-hover: rgba(224, 242, 241, 0.18);
+
+    --text-primary: #E0F2F1;
+    --text-secondary: #BAC7C7;
+    --text-muted: #949D9C;
+
+    --accent-color: #5D7AEB; /* Lightened brand blue for dark contrast */
+    --accent-hover: #4967EA;
+    --accent-rgb: 93, 122, 235;
+
+    --text-on-accent: #E0F2F1;
+
     --success-color: #10b981;
     --warning-color: #f59e0b;
     --danger-color: #f87171;
     --info-color: #22d3ee;
-    --dark-color: #f1f5f9;
-    
-    --shadow-sm: 0 1px 2px rgba(0,0,0,0.2);
-    --shadow-md: 0 10px 25px -5px rgba(0, 0, 0, 0.3), 0 8px 10px -6px rgba(0, 0, 0, 0.3);
-    --shadow-lg: 0 20px 40px -15px rgba(0, 0, 0, 0.4);
+    --not-responding-color: #fb923c;
+    --dark-color: #E0F2F1;
+
+    --shadow-sm: 0 1px 2px rgba(71,71,71,0.2);
+    --shadow-md: 0 10px 25px -5px rgba(71, 71, 71, 0.3), 0 8px 10px -6px rgba(71, 71, 71, 0.3);
+    --shadow-lg: 0 20px 40px -15px rgba(71, 71, 71, 0.4);
 }
 
 /* Global Elements */
@@ -117,34 +130,40 @@ h6 { font-size: 0.8rem; font-weight: 600; text-transform: uppercase; letter-spac
     display: none !important;
 }
 
+/* Bootstrap's .btn-close icon is a dark SVG; invert it for legibility
+   on the dark theme's surfaces instead of leaving it black-on-dark. */
+.dark-theme .theme-aware-close {
+    filter: invert(1) grayscale(100%) brightness(1.8);
+}
+
 /* Scrollbar styling */
 ::-webkit-scrollbar {
     width: 10px;
     height: 10px;
 }
 ::-webkit-scrollbar-track {
-    background: rgba(0, 0, 0, 0.03);
+    background: rgba(71, 71, 71, 0.03);
     border-radius: var(--border-radius-sm);
 }
 ::-webkit-scrollbar-thumb {
-    background: rgba(15, 23, 42, 0.2);
+    background: rgba(71, 71, 71, 0.2);
     border-radius: var(--border-radius-sm);
     border: 2px solid transparent;
     background-clip: padding-box;
 }
 ::-webkit-scrollbar-thumb:hover {
-    background: rgba(15, 23, 42, 0.45);
+    background: rgba(71, 71, 71, 0.45);
     border: 2px solid transparent;
     background-clip: padding-box;
 }
 .dark-theme ::-webkit-scrollbar-track {
-    background: rgba(255, 255, 255, 0.03);
+    background: rgba(224, 242, 241, 0.03);
 }
 .dark-theme ::-webkit-scrollbar-thumb {
-    background: rgba(248, 250, 252, 0.25);
+    background: rgba(224, 242, 241, 0.25);
 }
 .dark-theme ::-webkit-scrollbar-thumb:hover {
-    background: rgba(248, 250, 252, 0.5);
+    background: rgba(224, 242, 241, 0.5);
 }
 
 /* Glassmorphism Cards */
@@ -401,7 +420,7 @@ h6 { font-size: 0.8rem; font-weight: 600; text-transform: uppercase; letter-spac
     justify-content: space-around;
     align-items: center;
     padding-bottom: env(safe-area-inset-bottom);
-    box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.05);
+    box-shadow: 0 -4px 12px rgba(71, 71, 71, 0.05);
 }
 
 .mobile-nav-item {
@@ -439,7 +458,7 @@ h6 { font-size: 0.8rem; font-weight: 600; text-transform: uppercase; letter-spac
     height: 56px;
     border-radius: 50%;
     background-color: var(--accent-color);
-    color: white;
+    color: var(--text-on-accent);
     box-shadow: 0 4px 15px rgba(var(--accent-rgb), 0.4);
     align-items: center;
     justify-content: center;
@@ -539,28 +558,30 @@ h6 { font-size: 0.8rem; font-weight: 600; text-transform: uppercase; letter-spac
 }
 
 /* Row colors per status in light mode (subtle translucency) */
-.modern-table tbody tr.row-status-received { background-color: rgba(59, 130, 246, 0.04) !important; }
-.modern-table tbody tr.row-status-quotation-sent { background-color: rgba(113, 39, 122, 0.04) !important; }
+.modern-table tbody tr.row-status-received { background-color: rgba(71, 71, 71, 0.04) !important; }
+.modern-table tbody tr.row-status-quotation-sent { background-color: rgba(var(--accent-rgb), 0.04) !important; }
 .modern-table tbody tr.row-status-quotation-required { background-color: rgba(245, 158, 11, 0.04) !important; }
 .modern-table tbody tr.row-status-pending { background-color: rgba(234, 179, 8, 0.03) !important; }
 .modern-table tbody tr.row-status-in-progress { background-color: rgba(6, 182, 212, 0.04) !important; }
 .modern-table tbody tr.row-status-completed { background-color: rgba(16, 185, 129, 0.05) !important; }
 .modern-table tbody tr.row-status-cancelled { background-color: rgba(239, 68, 68, 0.04) !important; }
+.modern-table tbody tr.row-status-not-responding { background-color: rgba(194, 65, 12, 0.04) !important; }
 
 /* Dark mode tweaks for row colors */
-.dark-theme .modern-table tbody tr.row-status-received { background-color: rgba(59, 130, 246, 0.06) !important; }
-.dark-theme .modern-table tbody tr.row-status-quotation-sent { background-color: rgba(163, 59, 176, 0.06) !important; }
+.dark-theme .modern-table tbody tr.row-status-received { background-color: rgba(224, 242, 241, 0.06) !important; }
+.dark-theme .modern-table tbody tr.row-status-quotation-sent { background-color: rgba(var(--accent-rgb), 0.06) !important; }
 .dark-theme .modern-table tbody tr.row-status-quotation-required { background-color: rgba(245, 158, 11, 0.06) !important; }
 .dark-theme .modern-table tbody tr.row-status-pending { background-color: rgba(234, 179, 8, 0.05) !important; }
 .dark-theme .modern-table tbody tr.row-status-in-progress { background-color: rgba(6, 182, 212, 0.06) !important; }
 .dark-theme .modern-table tbody tr.row-status-completed { background-color: rgba(16, 185, 129, 0.08) !important; }
 .dark-theme .modern-table tbody tr.row-status-cancelled { background-color: rgba(239, 68, 68, 0.06) !important; }
+.dark-theme .modern-table tbody tr.row-status-not-responding { background-color: rgba(251, 146, 60, 0.07) !important; }
 
 .modern-table tbody tr:hover {
-    background-color: rgba(113, 39, 122, 0.08) !important; /* Brand purple hover */
+    background-color: rgba(var(--accent-rgb), 0.08) !important; /* Brand accent hover */
 }
 .dark-theme .modern-table tbody tr:hover {
-    background-color: rgba(163, 59, 176, 0.12) !important;
+    background-color: rgba(var(--accent-rgb), 0.12) !important;
 }
 
 /* Custom Responsive Badges */
@@ -578,12 +599,12 @@ h6 { font-size: 0.8rem; font-weight: 600; text-transform: uppercase; letter-spac
 }
 
 .badge-received {
-    background-color: rgba(30, 41, 59, 0.1);
+    background-color: rgba(71, 71, 71, 0.1);
     color: var(--text-secondary);
-    border-color: rgba(30, 41, 59, 0.2);
+    border-color: rgba(71, 71, 71, 0.2);
 }
 .dark-theme .badge-received {
-    background-color: rgba(241, 245, 249, 0.1);
+    background-color: rgba(224, 242, 241, 0.1);
     color: var(--text-primary);
 }
 
@@ -606,9 +627,9 @@ h6 { font-size: 0.8rem; font-weight: 600; text-transform: uppercase; letter-spac
 }
 
 .badge-in-progress {
-    background-color: rgba(59, 130, 246, 0.1);
+    background-color: rgba(var(--accent-rgb), 0.1);
     color: var(--accent-color);
-    border-color: rgba(59, 130, 246, 0.2);
+    border-color: rgba(var(--accent-rgb), 0.2);
 }
 
 .badge-completed {
@@ -621,6 +642,16 @@ h6 { font-size: 0.8rem; font-weight: 600; text-transform: uppercase; letter-spac
     background-color: rgba(239, 68, 68, 0.15);
     color: var(--danger-color);
     border-color: rgba(239, 68, 68, 0.3);
+}
+
+.badge-not-responding {
+    background-color: rgba(194, 65, 12, 0.1);
+    color: var(--not-responding-color);
+    border-color: rgba(194, 65, 12, 0.2);
+}
+.dark-theme .badge-not-responding {
+    background-color: rgba(251, 146, 60, 0.12);
+    border-color: rgba(251, 146, 60, 0.25);
 }
 
 /* Modern Inputs and Forms */
@@ -754,7 +785,7 @@ h6 { font-size: 0.8rem; font-weight: 600; text-transform: uppercase; letter-spac
 
 .btn-primary-modern {
     background-color: var(--accent-color);
-    color: #ffffff;
+    color: var(--text-on-accent);
     box-shadow: 0 4px 12px rgba(var(--accent-rgb), 0.25);
 }
 .btn-primary-modern:hover {
@@ -780,7 +811,7 @@ h6 { font-size: 0.8rem; font-weight: 600; text-transform: uppercase; letter-spac
 }
 .btn-danger-modern:hover {
     background-color: var(--danger-color);
-    color: white;
+    color: var(--text-on-accent);
 }
 
 .btn-success-modern {
@@ -790,7 +821,7 @@ h6 { font-size: 0.8rem; font-weight: 600; text-transform: uppercase; letter-spac
 }
 .btn-success-modern:hover {
     background-color: var(--success-color);
-    color: white;
+    color: var(--text-on-accent);
 }
 
 /* User Account Info Dropdown style */

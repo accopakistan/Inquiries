@@ -23,13 +23,9 @@
                     <label for="status" class="form-label-custom">Select Project Status</label>
                     <select name="status" id="status" class="modern-select" required>
                         <option value="">-- Choose Status --</option>
-                        <option value="Received">Received</option>
-                        <option value="Quotation Sent">Quotation Sent</option>
-                        <option value="Quotation Required">Quotation Required</option>
-                        <option value="Pending">Pending</option>
-                        <option value="In Progress">In Progress</option>
-                        <option value="Completed">Completed</option>
-                        <option value="Cancelled">Cancelled</option>
+                        @foreach (\App\Models\Inquiry::STATUSES as $statusOption)
+                            <option value="{{ $statusOption }}">{{ $statusOption }}</option>
+                        @endforeach
                     </select>
                 </div>
 

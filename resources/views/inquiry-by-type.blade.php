@@ -40,16 +40,6 @@
             <tbody>
                 @forelse($data as $item)
                     @php
-                        $badgeClass = 'badge-received';
-                        switch($item->status) {
-                            case 'Quotation Sent': $badgeClass = 'badge-quotation-sent'; break;
-                            case 'Quotation Required': $badgeClass = 'badge-quotation-required'; break;
-                            case 'Pending': $badgeClass = 'badge-pending'; break;
-                            case 'In Progress': $badgeClass = 'badge-in-progress'; break;
-                            case 'Completed': $badgeClass = 'badge-completed'; break;
-                            case 'Cancelled': $badgeClass = 'badge-cancelled'; break;
-                        }
-
                         $credibility = $item->credibility ?? 0;
                         if ($credibility < 30) {
                             $progressColor = 'bg-danger';
@@ -85,7 +75,7 @@
                         </td>
                         <td><span class="fw-semibold text-secondary">{{ $item->projectType->title ?? '-' }}</span></td>
                         <td><span style="font-size: 0.88rem;"><i class="bi bi-geo-alt me-1 text-muted"></i>{{ $item->location }}</span></td>
-                        <td><span class="modern-badge {{ $badgeClass }}">{{ $item->status }}</span></td>
+                        <td><span class="modern-badge {{ $item->status_badge_class }}">{{ $item->status }}</span></td>
                         <td>
                             @switch($item->source)
                                 @case('Facebook') <span class="text-primary"><i class="bi bi-facebook fs-5" title="Facebook"></i></span> @break
@@ -150,15 +140,6 @@
 <div class="mobile-card-feed">
     @forelse($data as $item)
         @php
-            $badgeClass = 'badge-received';
-            switch($item->status) {
-                case 'Quotation Sent': $badgeClass = 'badge-quotation-sent'; break;
-                case 'Quotation Required': $badgeClass = 'badge-quotation-required'; break;
-                case 'Pending': $badgeClass = 'badge-pending'; break;
-                case 'In Progress': $badgeClass = 'badge-in-progress'; break;
-                case 'Completed': $badgeClass = 'badge-completed'; break;
-                case 'Cancelled': $badgeClass = 'badge-cancelled'; break;
-            }
             $cred = $item->credibility ?? 0;
             $credColor = $cred >= 80 ? 'text-success' : ($cred >= 50 ? 'text-info' : 'text-warning');
         @endphp
@@ -167,7 +148,7 @@
                 <a href="{{ route('inquiry.view', $item->id) }}" class="text-decoration-none">
                     <h5 class="mobile-card-title text-primary" style="font-size: 1.15rem; font-weight:700;">{{ $item->name }}</h5>
                 </a>
-                <span class="modern-badge {{ $badgeClass }}" style="font-size: 0.72rem; padding: 4px 10px;">
+                <span class="modern-badge {{ $item->status_badge_class }}" style="font-size: 0.72rem; padding: 4px 10px;">
                     {{ $item->status }}
                 </span>
             </div>

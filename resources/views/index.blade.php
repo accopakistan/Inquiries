@@ -107,17 +107,6 @@
                     </thead>
                     <tbody>
                         @forelse($latestInquiries as $inq)
-                            @php
-                                $badgeClass = 'badge-received';
-                                switch($inq->status) {
-                                    case 'Quotation Sent': $badgeClass = 'badge-quotation-sent'; break;
-                                    case 'Quotation Required': $badgeClass = 'badge-quotation-required'; break;
-                                    case 'Pending': $badgeClass = 'badge-pending'; break;
-                                    case 'In Progress': $badgeClass = 'badge-in-progress'; break;
-                                    case 'Completed': $badgeClass = 'badge-completed'; break;
-                                    case 'Cancelled': $badgeClass = 'badge-cancelled'; break;
-                                }
-                            @endphp
                             <tr>
                                 <td>
                                     <a href="{{ route('inquiry.view', $inq->id) }}" class="fw-bold text-decoration-none text-primary">
@@ -127,7 +116,7 @@
                                 <td><span class="fw-semibold">{{ $inq->name }}</span></td>
                                 <td>{{ $inq->projectType->title ?? 'N/A' }}</td>
                                 <td>
-                                    <span class="modern-badge {{ $badgeClass }}">
+                                    <span class="modern-badge {{ $inq->status_badge_class }}">
                                         {{ $inq->status }}
                                     </span>
                                 </td>
@@ -145,21 +134,10 @@
             <!-- Mobile Layout: App style card list -->
             <div class="mobile-card-feed">
                 @forelse($latestInquiries as $inq)
-                    @php
-                        $badgeClass = 'badge-received';
-                        switch($inq->status) {
-                            case 'Quotation Sent': $badgeClass = 'badge-quotation-sent'; break;
-                            case 'Quotation Required': $badgeClass = 'badge-quotation-required'; break;
-                            case 'Pending': $badgeClass = 'badge-pending'; break;
-                            case 'In Progress': $badgeClass = 'badge-in-progress'; break;
-                            case 'Completed': $badgeClass = 'badge-completed'; break;
-                            case 'Cancelled': $badgeClass = 'badge-cancelled'; break;
-                        }
-                    @endphp
                     <a href="{{ route('inquiry.view', $inq->id) }}" class="mobile-data-card">
                         <div class="mobile-card-header">
                             <span class="mobile-card-title">{{ $inq->name }}</span>
-                            <span class="modern-badge {{ $badgeClass }}" style="font-size: 0.7rem; padding: 4px 8px;">
+                            <span class="modern-badge {{ $inq->status_badge_class }}" style="font-size: 0.7rem; padding: 4px 8px;">
                                 {{ $inq->status }}
                             </span>
                         </div>

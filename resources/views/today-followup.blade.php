@@ -15,7 +15,7 @@
             <i class="bi bi-check-circle-fill"></i>
             <span>{{ session('success') }}</span>
         </div>
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        <button type="button" class="btn-close theme-aware-close" data-bs-dismiss="alert" aria-label="Close"></button>
     </div>
 @endif
 

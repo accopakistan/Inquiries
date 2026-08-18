@@ -35,19 +35,8 @@
             <h4 class="mb-1 text-primary" style="font-weight: 700;">{{ $inquiry->name }}</h4>
             <span class="text-secondary d-block mb-3" style="font-size:0.9rem;">Client ID: #{{ str_pad($inquiry->id, 5, '0', STR_PAD_LEFT) }}</span>
             
-            @php
-                $badgeClass = 'badge-received';
-                switch($inquiry->status) {
-                    case 'Quotation Sent': $badgeClass = 'badge-quotation-sent'; break;
-                    case 'Quotation Required': $badgeClass = 'badge-quotation-required'; break;
-                    case 'Pending': $badgeClass = 'badge-pending'; break;
-                    case 'In Progress': $badgeClass = 'badge-in-progress'; break;
-                    case 'Completed': $badgeClass = 'badge-completed'; break;
-                    case 'Cancelled': $badgeClass = 'badge-cancelled'; break;
-                }
-            @endphp
             <div class="mb-4">
-                <span class="modern-badge {{ $badgeClass }} px-3 py-2" style="font-size: 0.8rem;">
+                <span class="modern-badge {{ $inquiry->status_badge_class }} px-3 py-2" style="font-size: 0.8rem;">
                     {{ $inquiry->status }}
                 </span>
             </div>
@@ -103,7 +92,7 @@
                         @endif
                     </div>
                     @if($inquiry->quotation && $inquiry->quotation !== 'nofile.pdf')
-                        <div class="border rounded overflow-hidden mt-2" style="height: 250px; background-color:#fff;">
+                        <div class="border rounded overflow-hidden mt-2" style="height: 250px; background-color: var(--bg-surface-solid);">
                             <iframe src="@modernAsset('quotations/' . $inquiry->quotation)" width="100%" height="100%" style="border:none;"></iframe>
                         </div>
                     @else
@@ -124,7 +113,7 @@
                         @endif
                     </div>
                     @if($inquiry->document && $inquiry->document !== 'nofile.pdf')
-                        <div class="border rounded overflow-hidden mt-2" style="height: 250px; background-color:#fff;">
+                        <div class="border rounded overflow-hidden mt-2" style="height: 250px; background-color: var(--bg-surface-solid);">
                             <iframe src="@modernAsset('documents/' . $inquiry->document)" width="100%" height="100%" style="border:none;"></iframe>
                         </div>
                     @else

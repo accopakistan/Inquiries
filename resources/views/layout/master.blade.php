@@ -42,7 +42,8 @@
                     </a>
                 </li>
                 @php
-                    $inquiriesSectionActive = Request::is('inquiries') || Request::is('inquiry-by-type/*') || Request::is('inquiries-by-status*');
+                    $inquiriesSectionActive = Request::is('inquiries') || Request::is('inquiry-by-type/*');
+                    $statusSectionActive = Request::is('inquiries-by-status*');
                 @endphp
                 <li>
                     <div class="menu-item-row">
@@ -61,6 +62,29 @@
                                 <li>
                                     <a href="{{ url('/inquiry-by-type', $type->id) }}" class="submenu-item {{ Request::is('inquiry-by-type/' . $type->id) ? 'active' : '' }}">
                                         {{ $type->title }}
+                                    </a>
+                                </li>
+                            @endforeach
+                        </ul>
+                    @endif
+                </li>
+                <li>
+                    <div class="menu-item-row">
+                        <a href="{{ route('inquiries.byStatus') }}" class="menu-item flex-grow-1 {{ $statusSectionActive ? 'active' : '' }}">
+                            <i class="bi bi-list-task"></i> Inquiries by Status
+                        </a>
+                        @if(isset($sidebarStatuses) && count($sidebarStatuses) > 0)
+                            <button type="button" class="submenu-toggle {{ $statusSectionActive ? '' : 'collapsed' }}" data-bs-toggle="collapse" data-bs-target="#statusSubmenu" aria-expanded="{{ $statusSectionActive ? 'true' : 'false' }}" aria-controls="statusSubmenu" aria-label="Toggle inquiry statuses">
+                                <i class="bi bi-chevron-down"></i>
+                            </button>
+                        @endif
+                    </div>
+                    @if(isset($sidebarStatuses) && count($sidebarStatuses) > 0)
+                        <ul class="menu-submenu collapse {{ $statusSectionActive ? 'show' : '' }}" id="statusSubmenu">
+                            @foreach ($sidebarStatuses as $status)
+                                <li>
+                                    <a href="{{ route('inquiries.byStatus', ['status' => $status]) }}" class="submenu-item {{ request('status') === $status ? 'active' : '' }}">
+                                        {{ $status }}
                                     </a>
                                 </li>
                             @endforeach
