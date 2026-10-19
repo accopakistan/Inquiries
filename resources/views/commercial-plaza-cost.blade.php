@@ -1251,7 +1251,7 @@ ol.deliv li{padding:3px 0;break-inside:avoid}
   <div class="quote-stage"><div class="quote-doc" id="quoteDoc"></div></div>
 </div>
 
-<script src="{{ asset('js/commercial-plaza-calc.js') }}?v={{ filemtime(public_path('js/commercial-plaza-calc.js')) }}"></script>
+<script src="@modernAsset('js/commercial-plaza-calc.js')?v={{ filemtime(public_path('js/commercial-plaza-calc.js')) }}"></script>
 <script>
 
 (function(){
@@ -1259,6 +1259,10 @@ ol.deliv li{padding:3px 0;break-inside:avoid}
 
   // calculation engine — public/js/commercial-plaza-calc.js; every figure comes from C.estimate()
   var C = window.PlazaCalc;
+  if(!C){
+    document.getElementById("calcWarn").textContent = "The calculation script (public/js/commercial-plaza-calc.js) did not load, so the estimate cannot be calculated. Check that the file is uploaded to the server.";
+    return;
+  }
   var STD = C.STD, DESIGN = C.DESIGN, MAX = C.MAX, CITIES = C.CITIES, AUTHS = C.AUTHS, DHA_PLOTS = C.DHA_PLOTS,
       TL = C.TL, DESIGN_STAGES = C.DESIGN_STAGES, ADDONS = C.ADDONS;
   var fmt = C.fmt, num = C.num, ordinal = C.ordinal, extend = C.extend, byId = C.byId, configStr = C.configStr,

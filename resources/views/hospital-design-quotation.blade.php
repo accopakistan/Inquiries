@@ -507,7 +507,7 @@ table.qt tr.sub td{background:#F4F8FC;font-weight:600;color:var(--navy)}
   <div class="quote-stage"><div class="quote-doc" id="quoteDoc"></div></div>
 </div>
 
-<script src="{{ asset('js/hospital-design-calc.js') }}?v={{ filemtime(public_path('js/hospital-design-calc.js')) }}"></script>
+<script src="@modernAsset('js/hospital-design-calc.js')?v={{ filemtime(public_path('js/hospital-design-calc.js')) }}"></script>
 <script>
 
 (function(){
@@ -515,6 +515,10 @@ table.qt tr.sub td{background:#F4F8FC;font-weight:600;color:var(--navy)}
 
   // calculation engine — public/js/hospital-design-calc.js; every figure comes from C.estimate()
   var C = window.HospitalCalc;
+  if(!C){
+    document.getElementById("calcWarn").textContent = "The calculation script (public/js/hospital-design-calc.js) did not load, so the quotation cannot be prepared. Check that the file is uploaded to the server.";
+    return;
+  }
   var fmt = C.fmt, ordinal = C.ordinal, estimate = C.estimate, inWords = C.inWords;
   var LOOKUP_URL = "{{ url('/hospital-design-quotation/inquiry') }}";
 

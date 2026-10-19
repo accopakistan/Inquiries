@@ -25,7 +25,7 @@ class HospitalDesignPageTest extends TestCase
     {
         $html = view('hospital-design-quotation')->render();
 
-        $this->assertStringContainsString('js/hospital-design-calc.js', $html);
+        $this->assertStringContainsString('public/js/hospital-design-calc.js', $html); // live site serves from the project root, so assets need public/
         $this->assertStringContainsString('window.HospitalCalc', $html);
         $this->assertStringContainsString('/hospital-design-quotation/inquiry', $html);
         $this->assertFileExists(public_path('js/hospital-design-calc.js'));

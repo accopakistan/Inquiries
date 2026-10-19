@@ -20,7 +20,7 @@ class CommercialPlazaPageTest extends TestCase
     {
         $html = view('commercial-plaza-cost')->render();
 
-        $this->assertStringContainsString('js/commercial-plaza-calc.js', $html);
+        $this->assertStringContainsString('public/js/commercial-plaza-calc.js', $html); // live site serves from the project root, so assets need public/
         $this->assertStringContainsString('window.PlazaCalc', $html);
         $this->assertFileExists(public_path('js/commercial-plaza-calc.js'));
     }
