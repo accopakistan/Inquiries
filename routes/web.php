@@ -54,4 +54,6 @@ Route::middleware(['login'])->group(function () {
     Route::get('/most-important', [InquiryController::class, 'mostImportant'])->name('most-important');
     Route::view('/house-construction-cost-calculator', 'house-construction-cost')->name('house-construction-cost-calculator');
     Route::view('/commercial-plaza-cost-calculator', 'commercial-plaza-cost')->name('commercial-plaza-cost-calculator');
+    Route::view('/hospital-design-quotation', 'hospital-design-quotation')->name('hospital-design-quotation');
+    Route::get('/hospital-design-quotation/inquiry/{id}', [InquiryController::class, 'quotationClient'])->whereNumber('id')->name('hospital-design-quotation.inquiry');
 });

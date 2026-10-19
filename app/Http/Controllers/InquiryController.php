@@ -171,6 +171,27 @@ class InquiryController extends Controller
     }
 
     /**
+     * Client details for the quotation builders, looked up by inquiry number.
+     *
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function quotationClient($id)
+    {
+        $inquiry = Inquiry::with('projectType')->find($id);
+
+        if (!$inquiry) {
+            return response()->json(['message' => 'Inquiry not found'], 404);
+        }
+
+        return response()->json([
+            'id' => $inquiry->id,
+            'name' => $inquiry->name,
+            'location' => $inquiry->location,
+            'project_type' => optional($inquiry->projectType)->title,
+        ]);
+    }
+
+    /**
      * Show the form for editing the specified resource.
      *
      * @return \Illuminate\Http\Response

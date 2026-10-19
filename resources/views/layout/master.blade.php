@@ -133,6 +133,11 @@
                         <i class="bi bi-building"></i> Plaza Calculator
                     </a>
                 </li>
+                <li>
+                    <a href="/hospital-design-quotation" class="menu-item {{ Request::is('hospital-design-quotation') ? 'active' : '' }}">
+                        <i class="bi bi-hospital"></i> Hospital Design
+                    </a>
+                </li>
             </ul>
 
             <div class="sidebar-footer">
