@@ -374,6 +374,7 @@ table.qt tr.sub td{background:#F4F8FC;font-weight:600;color:var(--navy)}
 .qcols{display:grid;grid-template-columns:1fr 1fr;gap:0;border:1px solid #C9D6E6}
 .qcols > div{padding:10px 13px}
 .qcols > div:first-child{border-right:1px solid #C9D6E6}
+.qcols > div:only-child{border-right:0}
 .qcols h4{font-family:"Archivo";font-weight:700;font-size:11.4px;color:var(--navy);margin:0 0 7px}
 .qlist{list-style:none;margin:0;padding:0;columns:2;column-gap:14px}
 .qlist li{font-size:10.2px;padding:1.5px 0 1.5px 11px;position:relative;break-inside:avoid;color:#333}
@@ -565,6 +566,23 @@ table.qt tr.sub td{background:#F4F8FC;font-weight:600;color:var(--navy)}
         </div>
 
         <div class="field">
+          <span class="ctrl-label">Rates</span>
+          <div class="seg" role="group" aria-label="Rates" id="rateSeg">
+            <button type="button" data-rates="std" aria-pressed="true">Standard rates</button>
+            <button type="button" data-rates="custom">Enter rates manually</button>
+          </div>
+          <div id="rateWrap" hidden style="margin-top:14px">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px 12px">
+              <div><label class="ctrl-label" for="rGray">Gray (Rs/SFT)</label><input type="number" id="rGray" min="0" step="50" value="2850" inputmode="numeric"></div>
+              <div><label class="ctrl-label" for="rFin">Finishing (Rs/SFT)</label><input type="number" id="rFin" min="0" step="50" value="2800" inputmode="numeric"></div>
+              <div><label class="ctrl-label" for="rBmtGray">Basement gray</label><input type="number" id="rBmtGray" min="0" step="50" value="5500" inputmode="numeric"></div>
+              <div><label class="ctrl-label" for="rBmtFin">Basement finishing</label><input type="number" id="rBmtFin" min="0" step="50" value="2800" inputmode="numeric"></div>
+            </div>
+            <div class="hint">These rates apply to the estimate, payment schedule and PDF quotation. Basement rates are used only when a basement is added.</div>
+          </div>
+        </div>
+
+        <div class="field">
           <span class="ctrl-label">Basement</span>
           <div class="seg" role="group" aria-label="Basement" id="bmtSeg">
             <button type="button" data-bmt="0" aria-pressed="true">No basement</button>
@@ -591,19 +609,19 @@ table.qt tr.sub td{background:#F4F8FC;font-weight:600;color:var(--navy)}
 
       <div class="est-out" id="estOut">
         <div class="out-row">
-          <div class="k">Gray structure<em>@ RS 2,850 / SFT</em></div>
+          <div class="k">Gray structure<em id="lGray">@ RS 2,850 / SFT</em></div>
           <div class="v" id="oGray">—</div>
         </div>
         <div class="out-row">
-          <div class="k">Standard finishing<em>@ RS 2,800 / SFT</em></div>
+          <div class="k">Standard finishing<em id="lFin">@ RS 2,800 / SFT</em></div>
           <div class="v" id="oFin">—</div>
         </div>
         <div class="out-row" id="rowBmtG" hidden>
-          <div class="k">Basement — gray<em>@ RS 5,500 / SFT</em></div>
+          <div class="k">Basement — gray<em id="lBmtG">@ RS 5,500 / SFT</em></div>
           <div class="v" id="oBmtG">—</div>
         </div>
         <div class="out-row" id="rowBmtF" hidden>
-          <div class="k">Basement — finishing<em>@ RS 2,800 / SFT</em></div>
+          <div class="k">Basement — finishing<em id="lBmtF">@ RS 2,800 / SFT</em></div>
           <div class="v" id="oBmtF">—</div>
         </div>
         <div class="out-row">
@@ -653,7 +671,7 @@ table.qt tr.sub td{background:#F4F8FC;font-weight:600;color:var(--navy)}
         </thead>
         <tbody>
           <tr><td class="name">5 Marla</td><td class="mono">25' × 45'</td><td class="num">1,125</td><td class="mono">30' × 45'</td><td class="num">2,000 SFT</td><td class="num">120 days<br><span style="color:#5A6B82;font-size:12px">≈ 4 months</span></td></tr>
-          <tr><td class="name">7 Marla</td><td class="mono">30' × 52'</td><td class="num">1,575</td><td class="mono">35' × 52'</td><td class="num">2,800 SFT</td><td class="num">150 days<br><span style="color:#5A6B82;font-size:12px">≈ 5 months</span></td></tr>
+          <tr><td class="name">7 Marla</td><td class="mono">30' × 52.5'</td><td class="num">1,575</td><td class="mono">35' × 52.5'</td><td class="num">2,800 SFT</td><td class="num">150 days<br><span style="color:#5A6B82;font-size:12px">≈ 5 months</span></td></tr>
           <tr><td class="name">8 Marla</td><td class="mono">30' × 60'</td><td class="num">1,800</td><td class="mono">35' × 60'</td><td class="num">3,000 SFT</td><td class="num">165 days<br><span style="color:#5A6B82;font-size:12px">≈ 5.5 months</span></td></tr>
           <tr><td class="name">10 Marla</td><td class="mono">35' × 65'</td><td class="num">2,275</td><td class="mono">40' × 65'</td><td class="num">3,450 SFT</td><td class="num">180 days<br><span style="color:#5A6B82;font-size:12px">≈ 6 months</span></td></tr>
           <tr><td class="name">1 Kanal</td><td class="mono">50' × 90'</td><td class="num">4,500</td><td class="mono">55' × 90'</td><td class="num">5,500 SFT</td><td class="num">210 days<br><span style="color:#5A6B82;font-size:12px">≈ 7 months</span></td></tr>
@@ -1093,7 +1111,7 @@ table.qt tr.sub td{background:#F4F8FC;font-weight:600;color:var(--navy)}
 
   var PLOTS = [
     {id:"5m",  label:"5 Marla",  w:25, d:45,  plot:1125, area:2000,  gd:70,  fd:50},
-    {id:"7m",  label:"7 Marla",  w:30, d:52,  plot:1575, area:2800,  gd:90,  fd:60},
+    {id:"7m",  label:"7 Marla",  w:30, d:52.5, plot:1575, area:2800,  gd:90,  fd:60},
     {id:"8m",  label:"8 Marla",  w:30, d:60,  plot:1800, area:3000,  gd:100, fd:65},
     {id:"10m", label:"10 Marla", w:35, d:65,  plot:2275, area:3450,  gd:105, fd:75},
     {id:"1k",  label:"1 Kanal",  w:50, d:90,  plot:4500, area:5500,  gd:125, fd:85},
@@ -1154,6 +1172,14 @@ table.qt tr.sub td{background:#F4F8FC;font-weight:600;color:var(--navy)}
     ]
   };
 
+  var BRAND_SCOPES = {
+    "Structure": "gray",
+    "Electrical": "finish",
+    "Plumbing & sanitary": "finish",
+    "Finishes": "finish",
+    "Joinery & hardware": "finish"
+  };
+
   // ── formatting ────────────────────────────────
   function rs(n){ return "Rs " + Math.round(n).toLocaleString("en-US"); }
   function words(n){
@@ -1204,7 +1230,37 @@ table.qt tr.sub td{background:#F4F8FC;font-weight:600;color:var(--navy)}
   });
 
   // ── estimator ─────────────────────────────────
-  var state = { plot: PLOTS[4], scope: "turnkey", area: PLOTS[4].area, custom:false, bmt:false, bmtArea: PLOTS[4].area/2 };
+  var state = { plot: PLOTS[4], scope: "turnkey", area: PLOTS[4].area, custom:false, bmt:false, bmtArea: PLOTS[4].area/2,
+                customRates:false, rates:{g:GRAY, f:FIN, bg:BMT_GRAY, bf:BMT_FIN} };
+
+  // active rates — manual entries when "Enter rates manually" is selected, otherwise the standard 2026 rates
+  function rates(){
+    return state.customRates ? state.rates : {g:GRAY, f:FIN, bg:BMT_GRAY, bf:BMT_FIN};
+  }
+  function rateTxt(n){ return Math.round(n).toLocaleString("en-US"); }
+
+  function getActiveScopes(){
+    var a = state.area || 0;
+    var ba = state.bmt ? (state.bmtArea || 0) : 0;
+    var showG = (state.scope !== "finish");
+    var showF = (state.scope !== "gray");
+    var r = rates();
+
+    if (state.customRates) {
+      if (r.g === 0 && (!state.bmt || r.bg === 0)) showG = false;
+      if (r.f === 0 && (!state.bmt || r.bf === 0)) showF = false;
+    }
+
+    var hasGray = showG && (a > 0 || (state.bmt && ba > 0));
+    var hasFin  = showF && (a > 0 || (state.bmt && ba > 0));
+
+    if (!hasGray && !hasFin) {
+      hasGray = (state.scope !== "finish");
+      hasFin  = (state.scope !== "gray");
+    }
+
+    return { gray: hasGray, finish: hasFin };
+  }
 
   var chips = document.getElementById("plotChips");
   PLOTS.forEach(function(p){
@@ -1249,6 +1305,26 @@ table.qt tr.sub td{background:#F4F8FC;font-weight:600;color:var(--navy)}
     var v = parseFloat(bmtInput.value);
     state.bmtArea = (isFinite(v) && v > 0) ? v : 0;
     render();
+  });
+
+  var rateSeg = document.getElementById("rateSeg");
+  var rateWrap = document.getElementById("rateWrap");
+  Array.prototype.forEach.call(rateSeg.querySelectorAll("button"), function(b){
+    b.addEventListener("click", function(){
+      state.customRates = b.getAttribute("data-rates") === "custom";
+      Array.prototype.forEach.call(rateSeg.querySelectorAll("button"), function(x){ x.setAttribute("aria-pressed","false"); });
+      b.setAttribute("aria-pressed","true");
+      rateWrap.hidden = !state.customRates;
+      render();
+    });
+  });
+  [["rGray","g"],["rFin","f"],["rBmtGray","bg"],["rBmtFin","bf"]].forEach(function(pair){
+    var el = document.getElementById(pair[0]);
+    el.addEventListener("input", function(){
+      var v = parseFloat(el.value);
+      state.rates[pair[1]] = (isFinite(v) && v >= 0) ? v : 0;
+      render();
+    });
   });
 
   var seg = document.getElementById("scopeSeg");
@@ -1296,8 +1372,14 @@ table.qt tr.sub td{background:#F4F8FC;font-weight:600;color:var(--navy)}
     var showG = (state.scope !== "finish");
     var showF = (state.scope !== "gray");
 
-    var g  = a * GRAY,  f  = a * FIN;
-    var bg = ba * BMT_GRAY, bf = ba * BMT_FIN;
+    var r  = rates();
+    var g  = a * r.g,  f  = a * r.f;
+    var bg = ba * r.bg, bf = ba * r.bf;
+
+    document.getElementById("lGray").textContent = "@ RS " + rateTxt(r.g) + " / SFT";
+    document.getElementById("lFin").textContent  = "@ RS " + rateTxt(r.f) + " / SFT";
+    document.getElementById("lBmtG").textContent = "@ RS " + rateTxt(r.bg) + " / SFT";
+    document.getElementById("lBmtF").textContent = "@ RS " + rateTxt(r.bf) + " / SFT";
 
     var grayPart = (showG ? g : 0) + (showG ? bg : 0);
     var finPart  = (showF ? f : 0) + (showF ? bf : 0);
@@ -1344,6 +1426,7 @@ table.qt tr.sub td{background:#F4F8FC;font-weight:600;color:var(--navy)}
       : "Standard double-storey covered area for " + state.plot.label + ".";
 
     drawPlot(state.plot);
+    if(typeof updateBrandTabs === "function") updateBrandTabs();
   }
 
   // ── payment schedule ──────────────────────────
@@ -1379,8 +1462,19 @@ table.qt tr.sub td{background:#F4F8FC;font-weight:600;color:var(--navy)}
   var grid = document.getElementById("brandGrid");
   var cats = Object.keys(BRANDS);
 
+  function getVisibleBrandCategories(){
+    var scopes = getActiveScopes();
+    return cats.filter(function(cat){
+      var sc = BRAND_SCOPES[cat] || "finish";
+      if(sc === "gray" && !scopes.gray) return false;
+      if(sc === "finish" && !scopes.finish) return false;
+      return true;
+    });
+  }
+
   function paint(cat){
     grid.innerHTML = "";
+    if(!cat || !BRANDS[cat]) return;
     BRANDS[cat].forEach(function(row){
       var d = document.createElement("div");
       d.className = "brand";
@@ -1393,27 +1487,43 @@ table.qt tr.sub td{background:#F4F8FC;font-weight:600;color:var(--navy)}
     });
   }
 
-  cats.forEach(function(c,i){
-    var b = document.createElement("button");
-    b.className = "tab"; b.type = "button"; b.setAttribute("role","tab");
-    b.textContent = c;
-    b.setAttribute("aria-selected", i===0 ? "true" : "false");
-    b.addEventListener("click", function(){
-      Array.prototype.forEach.call(tabs.children, function(t){ t.setAttribute("aria-selected","false"); });
-      b.setAttribute("aria-selected","true");
-      paint(c);
-    });
-    tabs.appendChild(b);
-  });
-  paint(cats[0]);
+  function updateBrandTabs(){
+    var visibleCats = getVisibleBrandCategories();
+    var currentActive = tabs.querySelector('[aria-selected="true"]');
+    var activeCat = currentActive ? currentActive.textContent : null;
 
-  // print: expand FAQ + all brand categories so nothing is lost in the PDF
+    tabs.innerHTML = "";
+    var targetCat = (visibleCats.indexOf(activeCat) !== -1) ? activeCat : (visibleCats[0] || null);
+
+    visibleCats.forEach(function(c){
+      var b = document.createElement("button");
+      b.className = "tab"; b.type = "button"; b.setAttribute("role","tab");
+      b.textContent = c;
+      b.setAttribute("aria-selected", c === targetCat ? "true" : "false");
+      b.addEventListener("click", function(){
+        Array.prototype.forEach.call(tabs.children, function(t){ t.setAttribute("aria-selected","false"); });
+        b.setAttribute("aria-selected","true");
+        paint(c);
+      });
+      tabs.appendChild(b);
+    });
+
+    if(targetCat){
+      paint(targetCat);
+    } else {
+      grid.innerHTML = '<p style="color:#5A6B82;padding:16px 0">No material specifications applicable for the selected scope.</p>';
+    }
+  }
+
+  updateBrandTabs();
+
+  // print: expand FAQ + visible brand categories so nothing outside scope is printed
   window.addEventListener("beforeprint", function(){
     Array.prototype.forEach.call(document.querySelectorAll(".faq details"), function(d){
       if(!d.open){ d.open = true; d.setAttribute("data-reclose","1"); }
     });
     grid.innerHTML = "";
-    cats.forEach(function(c){
+    getVisibleBrandCategories().forEach(function(c){
       BRANDS[c].forEach(function(row){
         var d = document.createElement("div");
         d.className = "brand";
@@ -1426,8 +1536,7 @@ table.qt tr.sub td{background:#F4F8FC;font-weight:600;color:var(--navy)}
     Array.prototype.forEach.call(document.querySelectorAll('.faq details[data-reclose]'), function(d){
       d.open = false; d.removeAttribute("data-reclose");
     });
-    var active = tabs.querySelector('[aria-selected="true"]');
-    paint(active ? active.textContent : cats[0]);
+    updateBrandTabs();
   });
 
   // ══ QUOTATION GENERATOR ═══════════════════════════════
@@ -1511,9 +1620,18 @@ table.qt tr.sub td{background:#F4F8FC;font-weight:600;color:var(--navy)}
     "ACCO provides a 10-year structural warranty on the RCC frame structure — foundation, columns, beams and roof slab — from the date of handover, covering defects in structural design and workmanship. This warranty excludes damage from natural disasters, unauthorised structural alterations, additional loads not accounted for in the approved design, or lack of routine maintenance."
   ];
 
-  function specRows(){
+  function specRows(filterScope){
+    var scopes = getActiveScopes();
     var out = "";
     Object.keys(BRANDS).forEach(function(cat){
+      var sc = BRAND_SCOPES[cat] || "finish";
+      if(filterScope){
+        if(sc !== filterScope) return;
+      } else {
+        if(sc === "gray" && !scopes.gray) return;
+        if(sc === "finish" && !scopes.finish) return;
+      }
+
       out += '<tr><td class="k" colspan="2" style="background:#EAF1FA;font-family:\'IBM Plex Sans\',sans-serif;font-weight:700;' +
              'font-size:9.2px;letter-spacing:.07em;text-transform:uppercase">' + esc(cat) + '</td></tr>';
       BRANDS[cat].forEach(function(r){
@@ -1521,6 +1639,9 @@ table.qt tr.sub td{background:#F4F8FC;font-weight:600;color:var(--navy)}
         out += '<tr><td class="k">' + esc(r.t) + '</td><td>' + vals + '</td></tr>';
       });
     });
+    if(!out){
+      out = '<tr><td colspan="2" style="text-align:center;color:#5A6B82;padding:10px">No material specifications applicable for the selected scope.</td></tr>';
+    }
     return out;
   }
 
@@ -1529,10 +1650,12 @@ table.qt tr.sub td{background:#F4F8FC;font-weight:600;color:var(--navy)}
     QREF = refNo();
     var a  = state.area || 0;
     var ba = state.bmt ? (state.bmtArea || 0) : 0;
-    var showG = (state.scope !== "finish");
-    var showF = (state.scope !== "gray");
+    var scopes = getActiveScopes();
+    var showG = scopes.gray;
+    var showF = scopes.finish;
 
-    var g = a*GRAY, f = a*FIN, bg = ba*BMT_GRAY, bf = ba*BMT_FIN;
+    var r = rates();
+    var g = a*r.g, f = a*r.f, bg = ba*r.bg, bf = ba*r.bf;
     var total = (showG ? g+bg : 0) + (showF ? f+bf : 0);
 
     var scopeName = state.scope === "gray" ? "Gray Structure Construction"
@@ -1549,22 +1672,22 @@ table.qt tr.sub td{background:#F4F8FC;font-weight:600;color:var(--navy)}
     if(showG){
       sr++; rows += '<tr><td class="c">'+sr+'</td><td><b>Gray structure</b><br><span style="color:#5A6B82;font-size:9.6px">'+
         'Complete RCC structural shell — foundation to plastered roofed building</span></td>'+
-        '<td class="n">'+Math.round(a).toLocaleString("en-US")+'</td><td class="n">2,850</td><td class="n">'+rs(g)+'</td></tr>';
+        '<td class="n">'+Math.round(a).toLocaleString("en-US")+'</td><td class="n">'+rateTxt(r.g)+'</td><td class="n">'+rs(g)+'</td></tr>';
     }
     if(showF){
       sr++; rows += '<tr><td class="c">'+sr+'</td><td><b>Standard finishing</b><br><span style="color:#5A6B82;font-size:9.6px">'+
         'Full finishing package to move-in condition</span></td>'+
-        '<td class="n">'+Math.round(a).toLocaleString("en-US")+'</td><td class="n">2,800</td><td class="n">'+rs(f)+'</td></tr>';
+        '<td class="n">'+Math.round(a).toLocaleString("en-US")+'</td><td class="n">'+rateTxt(r.f)+'</td><td class="n">'+rs(f)+'</td></tr>';
     }
     if(state.bmt && showG){
       sr++; rows += '<tr><td class="c">'+sr+'</td><td><b>Basement — gray structure</b><br><span style="color:#5A6B82;font-size:9.6px">'+
         'Excavation, shoring, raft, retaining walls, waterproofing, slab</span></td>'+
-        '<td class="n">'+Math.round(ba).toLocaleString("en-US")+'</td><td class="n">5,500</td><td class="n">'+rs(bg)+'</td></tr>';
+        '<td class="n">'+Math.round(ba).toLocaleString("en-US")+'</td><td class="n">'+rateTxt(r.bg)+'</td><td class="n">'+rs(bg)+'</td></tr>';
     }
     if(state.bmt && showF){
       sr++; rows += '<tr><td class="c">'+sr+'</td><td><b>Basement — finishing</b><br><span style="color:#5A6B82;font-size:9.6px">'+
         'Floor finish, paint, doors, lighting, power, drainage, ventilation</span></td>'+
-        '<td class="n">'+Math.round(ba).toLocaleString("en-US")+'</td><td class="n">2,800</td><td class="n">'+rs(bf)+'</td></tr>';
+        '<td class="n">'+Math.round(ba).toLocaleString("en-US")+'</td><td class="n">'+rateTxt(r.bf)+'</td><td class="n">'+rs(bf)+'</td></tr>';
     }
 
     // ── payment rows
@@ -1577,6 +1700,39 @@ table.qt tr.sub td{background:#F4F8FC;font-weight:600;color:var(--navy)}
 
     var qtyTotal = a + (state.bmt ? ba : 0);
     var blended  = qtyTotal ? Math.round(total/qtyTotal) : 0;
+
+    var quoteTerms = TERMS.filter(function(t, idx){
+      if(!showG && idx === 12) return false;
+      return true;
+    });
+
+    var scopeHtml = "";
+    if(showG){
+      scopeHtml += '<div><h4>Gray structure</h4><ul class="qlist">'+
+        GRAY_SCOPE.map(function(x){return '<li>'+esc(x)+'</li>';}).join('')+'</ul></div>';
+    }
+    if(showF){
+      scopeHtml += '<div><h4>Standard finishing</h4><ul class="qlist">'+
+        FIN_SCOPE.map(function(x){return '<li>'+esc(x)+'</li>';}).join('')+'</ul></div>';
+    }
+    var qcolsStyle = (showG && showF) ? '' : ' style="grid-template-columns:1fr;"';
+
+    var specHtml = "";
+    if(showG){
+      specHtml += '<div style="' + (showF ? 'margin-bottom:14px;' : '') + '">'+
+        '<h4 style="font-family:\'Archivo\',sans-serif;font-weight:700;font-size:11.4px;color:var(--navy);margin:0 0 6px">Gray structure</h4>'+
+        '<table class="spec"><tbody>'+specRows("gray")+'</tbody></table>'+
+      '</div>';
+    }
+    if(showF){
+      specHtml += '<div>'+
+        '<h4 style="font-family:\'Archivo\',sans-serif;font-weight:700;font-size:11.4px;color:var(--navy);margin:0 0 6px">Standard finishing</h4>'+
+        '<table class="spec"><tbody>'+specRows("finish")+'</tbody></table>'+
+      '</div>';
+    }
+    if(!specHtml){
+      specHtml = '<table class="spec"><tbody><tr><td colspan="2" style="text-align:center;color:#5A6B82;padding:10px">No material specifications applicable for the selected scope.</td></tr></tbody></table>';
+    }
 
     var html =
     '<div class="qhead">'+
@@ -1591,7 +1747,7 @@ table.qt tr.sub td{background:#F4F8FC;font-weight:600;color:var(--navy)}
     '</div>'+
 
     '<div class="qtitle"><div><h1>Quotation — House Construction</h1>'+
-      '<div class="sub">'+esc(scopeName)+' &middot; 2026 Rates</div></div>'+
+      '<div class="sub">'+esc(scopeName)+'</div></div>'+
       '<div class="qmeta"><b>Ref</b> '+QREF+'<br><b>Date</b> '+today()+'<br><b>Valid till</b> '+validTill()+'</div></div>'+
 
     '<div class="qto">'+
@@ -1640,22 +1796,19 @@ table.qt tr.sub td{background:#F4F8FC;font-weight:600;color:var(--navy)}
       '<div class="inwords" style="border-top:0"><b>Note</b>Durations are in calendar days and assume timely payments, timely approval of drawings and material selections, and normal weather. Finishing trades overlap the structural programme from the ground floor slab onward.</div></div>'+
 
     '<div class="qsection"><h2><i>05</i> Scope of work</h2>'+
-      '<div class="qcols">'+
-        '<div><h4>Gray structure'+(showG?'':' — not in this contract')+'</h4><ul class="qlist">'+
-          GRAY_SCOPE.map(function(x){return '<li>'+esc(x)+'</li>';}).join('')+'</ul></div>'+
-        '<div><h4>Standard finishing'+(showF?'':' — not in this contract')+'</h4><ul class="qlist">'+
-          FIN_SCOPE.map(function(x){return '<li>'+esc(x)+'</li>';}).join('')+'</ul></div>'+
+      '<div class="qcols"'+qcolsStyle+'>'+
+        scopeHtml+
       '</div></div>'+
 
     '<div class="qsection"><h2><i>06</i> Material specification</h2>'+
-      '<table class="spec"><tbody>'+specRows()+'</tbody></table>'+
-      '<div class="inwords" style="border-top:0"><b>Note</b>Final brand selection within each approved category is made jointly with the client before procurement.</div></div>'+
+      specHtml+
+      '<div class="inwords" style="margin-top:6px;border-top:1px solid #C9D6E6"><b>Note</b>Final brand selection within each approved category is made jointly with the client before procurement.</div></div>'+
 
     '<div class="qsection"><h2><i>07</i> Exclusions</h2>'+
       '<ol class="terms">'+EXCLUSIONS.map(function(x){return '<li>'+esc(x)+'</li>';}).join('')+'</ol></div>'+
 
     '<div class="qsection"><h2><i>08</i> Terms and conditions</h2>'+
-      '<ol class="terms">'+TERMS.map(function(x){return '<li>'+esc(x)+'</li>';}).join('')+'</ol></div>'+
+      '<ol class="terms">'+quoteTerms.map(function(x){return '<li>'+esc(x)+'</li>';}).join('')+'</ol></div>'+
 
     '<div class="sign">'+
       '<div><div class="r">For Ahmed Construction Company</div><div class="s">Authorised signatory &nbsp;|&nbsp; Date</div></div>'+

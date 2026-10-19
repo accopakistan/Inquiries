@@ -128,6 +128,11 @@
                         <i class="bi bi-calculator"></i> House Calculator
                     </a>
                 </li>
+                <li>
+                    <a href="/commercial-plaza-cost-calculator" class="menu-item {{ Request::is('commercial-plaza-cost-calculator') ? 'active' : '' }}">
+                        <i class="bi bi-building"></i> Plaza Calculator
+                    </a>
+                </li>
             </ul>
 
             <div class="sidebar-footer">

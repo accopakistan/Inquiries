@@ -53,4 +53,5 @@ Route::middleware(['login'])->group(function () {
     Route::get('/today-followups', [InquiryController::class, 'todayFollowups'])->name('today.followups');
     Route::get('/most-important', [InquiryController::class, 'mostImportant'])->name('most-important');
     Route::view('/house-construction-cost-calculator', 'house-construction-cost')->name('house-construction-cost-calculator');
+    Route::view('/commercial-plaza-cost-calculator', 'commercial-plaza-cost')->name('commercial-plaza-cost-calculator');
 });
