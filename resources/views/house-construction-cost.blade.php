@@ -231,6 +231,7 @@ h3{font-size:19px;font-weight:700;margin-bottom:10px}
 
 /* estimator output */
 .out-row{display:flex;justify-content:space-between;align-items:baseline;padding:13px 0;border-bottom:1px solid rgba(255,255,255,.13);gap:12px}
+.out-row[hidden]{display:none}
 .out-row .k{font-size:14px;color:#A9C2DC}
 .out-row .k em{font-style:normal;display:block;font-family:"IBM Plex Mono";font-size:11px;color:#7FA0C4;letter-spacing:.05em}
 .out-row .v{font-family:"IBM Plex Mono";font-size:17px;color:#fff;white-space:nowrap}
@@ -615,6 +616,16 @@ table.qt tr.sub td{background:#F4F8FC;font-weight:600;color:var(--navy)}
         </div>
 
         <div class="field">
+          <span class="ctrl-label">Plinth beam</span>
+          <label class="chkline"><input type="checkbox" id="plOn"> Add plinth beam to the contract</label>
+          <div id="plWrap" hidden style="margin-top:12px">
+            <label class="ctrl-label" for="plAmt">Plinth beam amount (Rs, lump sum)</label>
+            <input type="number" id="plAmt" min="0" step="1000" inputmode="numeric" placeholder="Enter amount">
+          </div>
+          <div class="hint" id="plHint">Not every site needs one. When ticked, the amount is added to the cost summary, the total and the payment schedule as a separate line.</div>
+        </div>
+
+        <div class="field">
           <span class="ctrl-label">Quotation details <span style="text-transform:none;letter-spacing:0;color:#8B9AAE">(optional)</span></span>
           <div class="lookup">
             <input type="number" id="qInq" min="1" step="1" inputmode="numeric" placeholder="Client ID — inquiry number" aria-label="Client ID — inquiry number">
@@ -647,6 +658,10 @@ table.qt tr.sub td{background:#F4F8FC;font-weight:600;color:var(--navy)}
         <div class="out-row" id="rowBmtF" hidden>
           <div class="k">Basement — finishing<em id="lBmtF">@ RS 2,800 / SFT</em></div>
           <div class="v" id="oBmtF">—</div>
+        </div>
+        <div class="out-row" id="rowPl" hidden>
+          <div class="k">Plinth beam<em>LUMP SUM · GRAY STRUCTURE</em></div>
+          <div class="v" id="oPl">—</div>
         </div>
         <div class="out-row" id="rowExt" hidden>
           <div class="k">External works<em id="lExt">—</em></div>
@@ -729,6 +744,7 @@ table.qt tr.sub td{background:#F4F8FC;font-weight:600;color:var(--navy)}
           <li>Brick masonry</li><li>Cement plaster</li><li>Staircase</li>
           <li>Underground water tank</li><li>Overhead water tank</li>
         </ul>
+        <p style="font-size:13px;color:var(--muted);margin:14px 0 0">Plinth beam is optional — not every site needs one. Where required it is priced separately as a lump sum.</p>
       </div>
       <div class="card">
         <h3>Standard finishing</h3>
@@ -878,7 +894,7 @@ table.qt tr.sub td{background:#F4F8FC;font-weight:600;color:var(--navy)}
         <div class="tl-pct">15%</div>
         <div class="tl-body">
           <h4>Substructure to plinth</h4>
-          <p>Excavation, PCC, foundation and footings, column starter bars, plinth beam, back-filling and compaction, damp proof course. Basement raft and retaining walls sit here where a basement is included.</p>
+          <p>Excavation, PCC, foundation and footings, column starter bars, plinth beam where included, back-filling and compaction, damp proof course. Basement raft and retaining walls sit here where a basement is included.</p>
         </div>
       </li>
       <li>
@@ -948,7 +964,7 @@ table.qt tr.sub td{background:#F4F8FC;font-weight:600;color:var(--navy)}
       <div class="cell"><h4>Home automation</h4><p>Smart lighting, HVAC control, CCTV, access control and structured cabling.</p></div>
       <div class="cell"><h4>Imported finishes</h4><p>Any specification above the standard schedule — imported marble, designer sanitary ware, bespoke joinery.</p></div>
     </div>
-    <p class="tbl-note">Air conditioning, generators, UPS systems, furniture and window treatments are also client-supplied unless written into the contract. External works — boundary wall, main gate, safety grills, driveway and landscaping — are included only when added to the scope of work.</p>
+    <p class="tbl-note">Air conditioning, generators, UPS systems, furniture and window treatments are also client-supplied unless written into the contract. External works — boundary wall, main gate, safety grills, driveway and landscaping — are included only when added to the scope of work. A plinth beam, where the site needs one, is priced separately.</p>
   </div>
 </section>
 
@@ -1270,7 +1286,12 @@ table.qt tr.sub td{background:#F4F8FC;font-weight:600;color:var(--navy)}
   // ── estimator ─────────────────────────────────
   var state = { plot: PLOTS[4], scope: "turnkey", area: PLOTS[4].area, custom:false, bmt:false, bmtArea: PLOTS[4].area/2,
                 customRates:false, rates:{g:GRAY, f:FIN, bg:BMT_GRAY, bf:BMT_FIN},
-                ext:false, extSel:EXT_ITEMS.map(function(){ return true; }) };
+                ext:false, extSel:EXT_ITEMS.map(function(){ return true; }),
+                pl:false, plAmt:0 };
+
+  // plinth beam — optional gray structure item, priced as a lump sum; never part of a finishing-only contract
+  function plOn(){ return state.pl && state.scope !== "finish"; }
+  function plCost(){ return plOn() ? state.plAmt : 0; }
 
   // ticked external works — listed in the scope of work, within the quoted rates (no cost line)
   function extList(){ return state.ext ? EXT_ITEMS.filter(function(x, i){ return state.extSel[i]; }) : []; }
@@ -1382,6 +1403,15 @@ table.qt tr.sub td{background:#F4F8FC;font-weight:600;color:var(--navy)}
     render();
   });
 
+  var plChk = document.getElementById("plOn"), plAmtIn = document.getElementById("plAmt");
+  plChk.addEventListener("change", function(){ state.pl = plChk.checked; render(); });
+  plAmtIn.addEventListener("input", function(){
+    var v = parseFloat(plAmtIn.value);
+    state.plAmt = (isFinite(v) && v > 0) ? v : 0;
+    plAmtIn.style.borderColor = "";
+    render();
+  });
+
   var seg = document.getElementById("scopeSeg");
   Array.prototype.forEach.call(seg.querySelectorAll("button"), function(b){
     b.addEventListener("click", function(){
@@ -1436,10 +1466,18 @@ table.qt tr.sub td{background:#F4F8FC;font-weight:600;color:var(--navy)}
     document.getElementById("lBmtG").textContent = "@ RS " + rateTxt(r.bg) + " / SFT";
     document.getElementById("lBmtF").textContent = "@ RS " + rateTxt(r.bf) + " / SFT";
 
-    var grayPart = (showG ? g : 0) + (showG ? bg : 0);
+    var grayPart = (showG ? g : 0) + (showG ? bg : 0) + plCost();
     var finPart  = (showF ? f : 0) + (showF ? bf : 0);
     var ext = extList();
     var total = grayPart + finPart;
+
+    plChk.disabled = state.scope === "finish";
+    document.getElementById("plWrap").hidden = !plOn();
+    document.getElementById("plHint").textContent = state.scope === "finish"
+      ? "Plinth beam is gray structure work, so it is not part of a finishing-only contract."
+      : "Not every site needs one. When ticked, the amount is added to the cost summary, the total and the payment schedule as a separate line.";
+    document.getElementById("rowPl").hidden = !plOn();
+    document.getElementById("oPl").textContent = plCost() ? rs(plCost()) : "Enter amount";
 
     document.getElementById("rowExt").hidden = !ext.length;
     document.getElementById("oExt").textContent = "In scope";
@@ -1514,6 +1552,7 @@ table.qt tr.sub td{background:#F4F8FC;font-weight:600;color:var(--navy)}
     document.getElementById("payBasis").textContent =
       "Based on a " + scopeName + " contract for " + sft(state.area || 0) +
       (state.bmt ? " plus a " + sft(state.bmtArea || 0) + " basement" : "") +
+      (plCost() ? ", plinth beam " + rs(plCost()) : "") +
       (extList().length ? ", with external works in scope" : "") +
       " — " + rs(total) + " total. Adjust the estimator to reprice.";
   }
@@ -1726,7 +1765,8 @@ table.qt tr.sub td{background:#F4F8FC;font-weight:600;color:var(--navy)}
     var r = rates();
     var g = a*r.g, f = a*r.f, bg = ba*r.bg, bf = ba*r.bf;
     var ext = extList();
-    var total = (showG ? g+bg : 0) + (showF ? f+bf : 0);
+    var pl = showG ? plCost() : 0, hasPl = showG && plOn();
+    var total = (showG ? g+bg : 0) + (showF ? f+bf : 0) + pl;
 
     var scopeName = state.scope === "gray" ? "Gray Structure Construction"
                   : state.scope === "finish" ? "Finishing Works"
@@ -1743,6 +1783,11 @@ table.qt tr.sub td{background:#F4F8FC;font-weight:600;color:var(--navy)}
       sr++; rows += '<tr><td class="c">'+sr+'</td><td><b>Gray structure</b><br><span style="color:#5A6B82;font-size:9.6px">'+
         'Complete RCC structural shell — foundation to plastered roofed building</span></td>'+
         '<td class="n">'+Math.round(a).toLocaleString("en-US")+'</td><td class="n">'+rateTxt(r.g)+'</td><td class="n">'+rs(g)+'</td></tr>';
+    }
+    if(hasPl){
+      sr++; rows += '<tr><td class="c">'+sr+'</td><td><b>Plinth beam</b><br><span style="color:#5A6B82;font-size:9.6px">'+
+        'RCC plinth beam over the foundation, below the ground floor walls</span></td>'+
+        '<td class="n">—</td><td class="n">Lump sum</td><td class="n">'+rs(pl)+'</td></tr>';
     }
     if(showF){
       sr++; rows += '<tr><td class="c">'+sr+'</td><td><b>Standard finishing</b><br><span style="color:#5A6B82;font-size:9.6px">'+
@@ -1775,6 +1820,7 @@ table.qt tr.sub td{background:#F4F8FC;font-weight:600;color:var(--navy)}
     var extMissing = EXT_ITEMS.filter(function(x){ return ext.indexOf(x) === -1; })
       .map(function(x){ return x.split(" — ")[0].toLowerCase(); });
     var quoteExclusions = EXCLUSIONS.slice(0, -1)
+      .concat(showG && !hasPl ? ["Plinth beam"] : [])
       .concat(extMissing.length ? ["External works — " + extMissing.join(", ")] : [])
       .concat(EXCLUSIONS.slice(-1));
 
@@ -1785,8 +1831,9 @@ table.qt tr.sub td{background:#F4F8FC;font-weight:600;color:var(--navy)}
 
     var scopeHtml = "";
     if(showG){
+      var grayItems = hasPl ? GRAY_SCOPE.slice(0, 3).concat(["Plinth beam"], GRAY_SCOPE.slice(3)) : GRAY_SCOPE;   // after Foundation
       scopeHtml += '<div><h4>Gray structure</h4><ul class="qlist">'+
-        GRAY_SCOPE.map(function(x){return '<li>'+esc(x)+'</li>';}).join('')+'</ul></div>';
+        grayItems.map(function(x){return '<li>'+esc(x)+'</li>';}).join('')+'</ul></div>';
     }
     if(showF){
       scopeHtml += '<div><h4>Standard finishing</h4><ul class="qlist">'+
@@ -1917,6 +1964,14 @@ table.qt tr.sub td{background:#F4F8FC;font-weight:600;color:var(--navy)}
   }
 
   document.getElementById("qGen").addEventListener("click", function(){
+    // a ticked plinth beam needs its amount before it can go on the quotation
+    if(plOn() && !state.plAmt){
+      plAmtIn.style.borderColor = "#B3261E";
+      plAmtIn.scrollIntoView({block:"center"});
+      plAmtIn.focus();
+      document.getElementById("plHint").textContent = "Enter the plinth beam amount, or untick it, before creating the quotation.";
+      return;
+    }
     buildQuote();
     showQuote(true);
   });
