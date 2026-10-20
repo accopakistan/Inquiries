@@ -507,6 +507,7 @@ table.qt tr.sub td{background:#F4F8FC;font-weight:600;color:var(--navy)}
   <div class="quote-stage"><div class="quote-doc" id="quoteDoc"></div></div>
 </div>
 
+<script src="@modernAsset('js/inquiry-lookup.js')?v={{ filemtime(public_path('js/inquiry-lookup.js')) }}"></script>
 <script src="@modernAsset('js/hospital-design-calc.js')?v={{ filemtime(public_path('js/hospital-design-calc.js')) }}"></script>
 <script>
 
@@ -520,7 +521,7 @@ table.qt tr.sub td{background:#F4F8FC;font-weight:600;color:var(--navy)}
     return;
   }
   var fmt = C.fmt, ordinal = C.ordinal, estimate = C.estimate, inWords = C.inWords;
-  var LOOKUP_URL = "{{ url('/hospital-design-quotation/inquiry') }}";
+  var LOOKUP_URL = "{{ url('/quotation/inquiry') }}";
 
   var TYPES = ["General hospital","Teaching hospital","Multi-specialty hospital","Gynaecology & paediatric hospital",
     "Oncology & radiology centre","Cardiac & dialysis unit","Emergency & trauma centre","Maternity & neonatal care unit",
@@ -647,29 +648,13 @@ table.qt tr.sub td{background:#F4F8FC;font-weight:600;color:var(--navy)}
     Array.prototype.forEach.call(drwList.querySelectorAll("input"), function(i){ i.checked = !!state.drw[i.getAttribute("data-id")]; });
   }
 
-  // ── inquiry lookup ────────────────────────────
-  var inqStat = document.getElementById("qInqStat");
-  function lookup(){
-    var id = parseInt(val("qInq"), 10);
-    inqStat.className = "lookstat";
-    if(!(id > 0)){ inqStat.className = "lookstat err"; inqStat.textContent = "Enter the inquiry number from the inquiries page."; return; }
-    inqStat.textContent = "Looking up inquiry #" + id + "…";
-    fetch(LOOKUP_URL + "/" + id, {headers:{"Accept":"application/json","X-Requested-With":"XMLHttpRequest"}, credentials:"same-origin"})
-      .then(function(r){ if(!r.ok) throw r.status; return r.json(); })
-      .then(function(d){
-        document.getElementById("qClient").value = d.name || "";
-        if(d.location) document.getElementById("qLoc").value = d.location;
-        inqStat.className = "lookstat ok";
-        inqStat.textContent = "Inquiry #" + d.id + " — " + d.name + (d.location ? " · " + d.location : "") + (d.project_type ? " · " + d.project_type : "") + ". Check and edit below.";
-      })
-      .catch(function(code){
-        inqStat.className = "lookstat err";
-        inqStat.textContent = code === 404 ? "No inquiry #" + id + " found. Enter the client details by hand."
-          : "Could not reach the inquiries list. Enter the client details by hand.";
-      });
+  // ── inquiry lookup — public/js/inquiry-lookup.js ──
+  function attachLookup(){
+    return InquiryLookup.attach({url:LOOKUP_URL, input:"qInq", button:"qInqGo", status:"qInqStat", onFound:function(d){
+      document.getElementById("qClient").value = d.name || "";
+      if(d.location) document.getElementById("qLoc").value = d.location;
+    }});
   }
-  document.getElementById("qInqGo").addEventListener("click", lookup);
-  document.getElementById("qInq").addEventListener("keydown", function(e){ if(e.key === "Enter"){ e.preventDefault(); lookup(); } });
 
   // ── rendering ─────────────────────────────────
   function setVal(id, v){ var el = document.getElementById(id); if(document.activeElement !== el) el.value = v; }
@@ -894,10 +879,7 @@ table.qt tr.sub td{background:#F4F8FC;font-weight:600;color:var(--navy)}
 
   renderDrawings();
   renderAll();
-
-  // opened from an inquiry, e.g. /hospital-design-quotation?inquiry=1235 — fetch that client straight away
-  var startInq = new URLSearchParams(location.search).get("inquiry");
-  if(startInq && parseInt(startInq, 10) > 0){ document.getElementById("qInq").value = parseInt(startInq, 10); lookup(); }
+  attachLookup();   // also fetches ?inquiry=1235 straight away
 })();
 
 </script>

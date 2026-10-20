@@ -219,6 +219,12 @@ h3{font-size:19px;font-weight:700;margin-bottom:10px}
 .chkline{display:flex;align-items:center;gap:9px;font-size:14px;color:var(--navy);cursor:pointer;margin:0 0 7px}
 .chkline input{width:17px;height:17px;accent-color:var(--blue-bright);margin:0;flex:none}
 #extItems .chkline{font-size:13.5px;color:#3B4A5E}
+.lookup{display:flex;gap:8px}
+.field .lookup input[type=number]{flex:1;min-width:0;font-family:"IBM Plex Sans";font-size:15px;padding:11px 14px}
+.lookup .btn{padding:10px 16px;white-space:nowrap;cursor:pointer;font-family:inherit}
+.lookstat{font-size:12.5px;margin:7px 0 10px;color:var(--muted);min-height:1em}
+.lookstat.ok{color:#1E7B3A}
+.lookstat.err{color:#B3261E}
 
 .plotdraw{margin-top:8px;border-top:1px dashed var(--line-strong);padding-top:18px}
 .plotdraw svg{width:100%;height:auto;max-height:210px;display:block}
@@ -612,6 +618,11 @@ table.qt tr.sub td{background:#F4F8FC;font-weight:600;color:var(--navy)}
 
         <div class="field">
           <span class="ctrl-label">Quotation details <span style="text-transform:none;letter-spacing:0;color:#8B9AAE">(optional)</span></span>
+          <div class="lookup">
+            <input type="number" id="qInq" min="1" step="1" inputmode="numeric" placeholder="Client ID — inquiry number" aria-label="Client ID — inquiry number">
+            <button type="button" class="btn" id="qInqGo">Fetch client</button>
+          </div>
+          <div class="lookstat" id="qInqStat" role="status"></div>
           <input type="text" id="qClient" placeholder="Client name" style="width:100%;font-family:'IBM Plex Sans';font-size:15px;padding:11px 14px;border:1px solid var(--line-strong);border-radius:2px;margin-bottom:8px">
           <input type="text" id="qSite" placeholder="Plot no. / society / city" style="width:100%;font-family:'IBM Plex Sans';font-size:15px;padding:11px 14px;border:1px solid var(--line-strong);border-radius:2px">
         </div>
@@ -1111,6 +1122,7 @@ table.qt tr.sub td{background:#F4F8FC;font-weight:600;color:var(--navy)}
   <div class="quote-stage"><div class="quote-doc" id="quoteDoc"></div></div>
 </div>
 
+<script src="@modernAsset('js/inquiry-lookup.js')?v={{ filemtime(public_path('js/inquiry-lookup.js')) }}"></script>
 <script>
 
 (function(){
@@ -1634,7 +1646,15 @@ table.qt tr.sub td{background:#F4F8FC;font-weight:600;color:var(--navy)}
     var m = ["January","February","March","April","May","June","July","August","September","October","November","December"];
     return d.getDate() + " " + m[d.getMonth()] + " " + d.getFullYear();
   }
+  // client ID — the inquiry number, fetched from the inquiries list (public/js/inquiry-lookup.js)
+  var INQ = InquiryLookup.attach({url:"{{ url('/quotation/inquiry') }}", input:"qInq", button:"qInqGo", status:"qInqStat", onFound:function(d){
+    document.getElementById("qClient").value = d.name || "";
+    if(d.location) document.getElementById("qSite").value = d.location;
+  }});
+
   function refNo(){
+    var n = INQ.number();
+    if(n) return "ACCO/QTN/HC" + n;
     var d = new Date();
     var p = function(x){ return (x<10?"0":"") + x; };
     return "ACCO/HC/" + d.getFullYear() + "/" + p(d.getMonth()+1) + p(d.getDate()) + "-" +
@@ -1828,7 +1848,8 @@ table.qt tr.sub td{background:#F4F8FC;font-weight:600;color:var(--navy)}
 
     '<div class="qtitle"><div><h1>Quotation — House Construction</h1>'+
       '<div class="sub">'+esc(scopeName)+'</div></div>'+
-      '<div class="qmeta"><b>Ref</b> '+QREF+'<br><b>Date</b> '+today()+'<br><b>Valid till</b> '+validTill()+'</div></div>'+
+      '<div class="qmeta"><b>Ref</b> '+QREF+'<br><b>Date</b> '+today()+'<br><b>Valid till</b> '+validTill()+
+        (INQ.number() ? '<br><b>Client ID</b> #'+INQ.number() : '')+'</div></div>'+
 
     '<div class="qto">'+
       '<div><div class="lbl">Quotation for</div><div class="val">'+esc(client)+'</div></div>'+
@@ -1918,7 +1939,8 @@ table.qt tr.sub td{background:#F4F8FC;font-weight:600;color:var(--navy)}
   function quoteFileName(){
     var c = document.getElementById("qClient").value.trim()
               .replace(/[^A-Za-z0-9 ]/g,"").replace(/\s+/g,"-");
-    return c || QREF.replace(/[^A-Za-z0-9]/g,"-");
+    var n = INQ.number();
+    return [n ? "HC" + n : "", c].filter(Boolean).join("-") || QREF.replace(/[^A-Za-z0-9]/g,"-");
   }
 
   function needClient(){

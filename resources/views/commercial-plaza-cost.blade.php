@@ -465,6 +465,12 @@ table.qt tr.sub td{background:#F4F8FC;font-weight:600;color:var(--navy)}
 .sel{width:100%;font-family:"IBM Plex Sans";font-size:15px;padding:11px 12px;border:1px solid var(--line-strong);border-radius:2px;background:#fff;color:var(--ink)}
 .txt{width:100%;font-family:"IBM Plex Sans";font-size:15px;padding:11px 14px;border:1px solid var(--line-strong);border-radius:2px}
 .seg button:disabled{color:#A9B6C8;cursor:not-allowed;background:#F4F6F9}
+.lookup{display:flex;gap:8px}
+.field .lookup input[type=number]{flex:1;min-width:0;font-family:"IBM Plex Sans";font-size:15px;padding:11px 14px}
+.lookup .btn{padding:10px 16px;white-space:nowrap;cursor:pointer;font-family:inherit}
+.lookstat{font-size:12.5px;margin:7px 0 10px;color:var(--muted);min-height:1em}
+.lookstat.ok{color:#1E7B3A}
+.lookstat.err{color:#B3261E}
 .counts{display:flex;flex-wrap:wrap;gap:14px 22px;align-items:flex-end}
 .stepper{display:flex;align-items:center;border:1px solid var(--line-strong);border-radius:2px;background:#fff;width:max-content}
 .stepper button{width:38px;height:40px;border:0;background:#fff;color:var(--navy);font-size:19px;cursor:pointer;line-height:1}
@@ -735,6 +741,11 @@ ol.deliv li{padding:3px 0;break-inside:avoid}
 
         <div class="field">
           <span class="ctrl-label">Quotation details <span style="text-transform:none;letter-spacing:0;color:#8B9AAE">(optional)</span></span>
+          <div class="lookup">
+            <input type="number" id="qInq" class="txt" min="1" step="1" inputmode="numeric" placeholder="Client ID — inquiry number" aria-label="Client ID — inquiry number">
+            <button type="button" class="btn" id="qInqGo">Fetch client</button>
+          </div>
+          <div class="lookstat" id="qInqStat" role="status"></div>
           <input type="text" id="qClient" class="txt" placeholder="Client name" style="margin-bottom:8px">
           <input type="text" id="qSite" class="txt" placeholder="Plot no. / street / block">
         </div>
@@ -1251,6 +1262,7 @@ ol.deliv li{padding:3px 0;break-inside:avoid}
   <div class="quote-stage"><div class="quote-doc" id="quoteDoc"></div></div>
 </div>
 
+<script src="@modernAsset('js/inquiry-lookup.js')?v={{ filemtime(public_path('js/inquiry-lookup.js')) }}"></script>
 <script src="@modernAsset('js/commercial-plaza-calc.js')?v={{ filemtime(public_path('js/commercial-plaza-calc.js')) }}"></script>
 <script>
 
@@ -1998,7 +2010,15 @@ ol.deliv li{padding:3px 0;break-inside:avoid}
   function dateTxt(d){ return d.getDate() + " " + MONTHS[d.getMonth()] + " " + d.getFullYear(); }
   function today(){ return dateTxt(new Date()); }
   function validTill(){ var d = new Date(); d.setDate(d.getDate() + 30); return dateTxt(d); }
+  // client ID — the inquiry number, fetched from the inquiries list (public/js/inquiry-lookup.js)
+  var INQ = InquiryLookup.attach({url:"{{ url('/quotation/inquiry') }}", input:"qInq", button:"qInqGo", status:"qInqStat", onFound:function(d){
+    document.getElementById("qClient").value = d.name || "";
+    if(d.location) document.getElementById("qSite").value = d.location;
+  }});
+
   function refNo(){
+    var n = INQ.number();
+    if(n) return "ACCO/QTN/CP" + n;
     var d = new Date();
     var p = function(x){ return (x<10?"0":"") + x; };
     return "ACCO/CP/" + d.getFullYear() + "/" + p(d.getMonth()+1) + p(d.getDate()) + "-" +
@@ -2250,7 +2270,8 @@ ol.deliv li{padding:3px 0;break-inside:avoid}
     '</div>' +
     '<div class="qtitle"><div><h1>Preliminary Quotation — Commercial Plaza</h1>' +
       '<div class="sub">' + esc(scopeTitle(cfg)) + '</div></div>' +
-      '<div class="qmeta"><b>Ref</b> ' + QREF + '<br><b>Date</b> ' + today() + '<br><b>Valid till</b> ' + validTill() + '</div></div>' +
+      '<div class="qmeta"><b>Ref</b> ' + QREF + '<br><b>Date</b> ' + today() + '<br><b>Valid till</b> ' + validTill() +
+        (INQ.number() ? '<br><b>Client ID</b> #' + INQ.number() : '') + '</div></div>' +
     '<div class="qto">' +
       '<div><div class="lbl">Quotation for</div><div class="val">' + esc(client) + '</div></div>' +
       '<div><div class="lbl">Project site</div><div class="val">' + esc(site) + '</div></div>' +
@@ -2284,7 +2305,8 @@ ol.deliv li{padding:3px 0;break-inside:avoid}
   function quoteFileName(){
     var c = document.getElementById("qClient").value.trim()
               .replace(/[^A-Za-z0-9 ]/g,"").replace(/\s+/g,"-");
-    return c || QREF.replace(/[^A-Za-z0-9]/g,"-");
+    var n = INQ.number();
+    return [n ? "CP" + n : "", c].filter(Boolean).join("-") || QREF.replace(/[^A-Za-z0-9]/g,"-");
   }
 
   function needClient(){
