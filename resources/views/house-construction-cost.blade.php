@@ -216,6 +216,10 @@ h3{font-size:19px;font-weight:700;margin-bottom:10px}
 .seg button:last-child{border-right:0}
 .seg button[aria-pressed="true"]{background:var(--blue-bright);color:#fff}
 
+.chkline{display:flex;align-items:center;gap:9px;font-size:14px;color:var(--navy);cursor:pointer;margin:0 0 7px}
+.chkline input{width:17px;height:17px;accent-color:var(--blue-bright);margin:0;flex:none}
+#extItems .chkline{font-size:13.5px;color:#3B4A5E}
+
 .plotdraw{margin-top:8px;border-top:1px dashed var(--line-strong);padding-top:18px}
 .plotdraw svg{width:100%;height:auto;max-height:210px;display:block}
 
@@ -501,7 +505,7 @@ table.qt tr.sub td{background:#F4F8FC;font-weight:600;color:var(--navy)}
       <div class="rate">
         <div class="lbl">Standard finishing</div>
         <div class="val">Rs 2,800<small>/ SFT</small></div>
-        <div class="sub">Tiles, marble, paint, doors, windows, POP ceiling, kitchen, wardrobes, MEP, boundary wall, MS gate and safety grills.</div>
+        <div class="sub">Tiles, marble, paint, doors, windows, POP ceiling, kitchen, wardrobes and MEP. Boundary wall, gate and other external works are added on request.</div>
       </div>
       <div class="rate opt">
         <div class="lbl">Optional basement</div>
@@ -596,6 +600,17 @@ table.qt tr.sub td{background:#F4F8FC;font-weight:600;color:var(--navy)}
         </div>
 
         <div class="field">
+          <span class="ctrl-label">External works</span>
+          <label class="chkline"><input type="checkbox" id="extOn"> Add external works to the scope of work</label>
+          <div id="extWrap" hidden style="margin-top:12px">
+            <div id="extItems"></div>
+            <label class="ctrl-label" for="extAmt" style="margin-top:14px">Charge for external works (Rs, optional)</label>
+            <input type="number" id="extAmt" min="0" step="1000" value="0" inputmode="numeric">
+            <div class="hint">Leave at 0 to include the ticked items within the quoted rates. An amount is added to the total, the payment schedule and the PDF as a separate line.</div>
+          </div>
+        </div>
+
+        <div class="field">
           <span class="ctrl-label">Quotation details <span style="text-transform:none;letter-spacing:0;color:#8B9AAE">(optional)</span></span>
           <input type="text" id="qClient" placeholder="Client name" style="width:100%;font-family:'IBM Plex Sans';font-size:15px;padding:11px 14px;border:1px solid var(--line-strong);border-radius:2px;margin-bottom:8px">
           <input type="text" id="qSite" placeholder="Plot no. / society / city" style="width:100%;font-family:'IBM Plex Sans';font-size:15px;padding:11px 14px;border:1px solid var(--line-strong);border-radius:2px">
@@ -623,6 +638,10 @@ table.qt tr.sub td{background:#F4F8FC;font-weight:600;color:var(--navy)}
         <div class="out-row" id="rowBmtF" hidden>
           <div class="k">Basement — finishing<em id="lBmtF">@ RS 2,800 / SFT</em></div>
           <div class="v" id="oBmtF">—</div>
+        </div>
+        <div class="out-row" id="rowExt" hidden>
+          <div class="k">External works<em id="lExt">—</em></div>
+          <div class="v" id="oExt">—</div>
         </div>
         <div class="out-row">
           <div class="k">Covered area<em>PRICED QUANTITY</em></div>
@@ -679,7 +698,7 @@ table.qt tr.sub td{background:#F4F8FC;font-weight:600;color:var(--navy)}
         </tbody>
       </table>
     </div>
-    <p class="tbl-note">Completion time is gray structure plus finishing, running from mobilisation to handover, on a 60:40 split between the two. A 10 Marla house completes in 6 months. A basement adds 60 days to any house. Corner plots carry extra frontage and boundary wall length, which adds to the finishing quantity even when covered area stays the same.</p>
+    <p class="tbl-note">Completion time is gray structure plus finishing, running from mobilisation to handover, on a 60:40 split between the two. A 10 Marla house completes in 6 months. A basement adds 60 days to any house. Corner plots carry extra frontage and boundary wall length, which adds to the external works when they are included, even though covered area stays the same.</p>
   </div>
 </section>
 
@@ -710,14 +729,13 @@ table.qt tr.sub td{background:#F4F8FC;font-weight:600;color:var(--navy)}
           <li>Floor tiles</li><li>Marble</li><li>Wall tiles</li><li>Paint</li>
           <li>Doors</li><li>Windows</li><li>False ceiling / POP</li><li>Kitchen</li>
           <li>Wardrobes</li><li>Electrical works</li><li>Plumbing works</li>
-          <li>Sanitary fixtures</li><li>Glass works</li><li>Boundary wall</li>
-          <li>Main gate — MS, 16 gauge</li><li>MS door frames — 16 gauge</li>
-          <li>Safety grills</li><li>Driveway</li><li>Landscaping</li>
+          <li>Sanitary fixtures</li><li>Glass works</li><li>MS door frames — 16 gauge</li>
         </ul>
       </div>
     </div>
     <p class="tbl-note"><b>Combined turnkey rate: <span class="mono">Rs 5,650 per square foot</span> of covered area.</b><br>
-    Basis of measurement — all quantities are measured on covered area only, as shown on the approved drawings. Boundary wall, main gate and driveway are included in the finishing rate and are not measured separately.</p>
+    Basis of measurement — all quantities are measured on covered area only, as shown on the approved drawings.<br>
+    <b>External works</b> — boundary wall, main gate (MS, 16 gauge), safety grills, driveway and landscaping — are not part of either rate. They are added to the scope of work on request, with any charge shown as a separate line.</p>
 
     <div class="card" style="margin-top:24px;border-left:4px solid var(--blue-bright)">
       <h3>Optional basement — priced separately</h3>
@@ -921,7 +939,7 @@ table.qt tr.sub td{background:#F4F8FC;font-weight:600;color:var(--navy)}
       <div class="cell"><h4>Home automation</h4><p>Smart lighting, HVAC control, CCTV, access control and structured cabling.</p></div>
       <div class="cell"><h4>Imported finishes</h4><p>Any specification above the standard schedule — imported marble, designer sanitary ware, bespoke joinery.</p></div>
     </div>
-    <p class="tbl-note">Air conditioning, generators, UPS systems, furniture and window treatments are also client-supplied unless written into the contract.</p>
+    <p class="tbl-note">Air conditioning, generators, UPS systems, furniture and window treatments are also client-supplied unless written into the contract. External works — boundary wall, main gate, safety grills, driveway and landscaping — are included only when added to the scope of work.</p>
   </div>
 </section>
 
@@ -1019,7 +1037,7 @@ table.qt tr.sub td{background:#F4F8FC;font-weight:600;color:var(--navy)}
       </details>
       <details>
         <summary>What is the difference between gray structure and turnkey construction?</summary>
-        <div class="ans"><p>Gray structure is the complete structural shell — foundation, RCC frame, masonry, plaster, staircase and water tanks — handed over roofed and watertight but unfinished. Turnkey adds the full finishing package: tiles, marble, paint, doors, windows, kitchen, wardrobes, electrical, plumbing, sanitary, boundary wall, gate, driveway and landscaping, so the house is ready to occupy.</p></div>
+        <div class="ans"><p>Gray structure is the complete structural shell — foundation, RCC frame, masonry, plaster, staircase and water tanks — handed over roofed and watertight but unfinished. Turnkey adds the full finishing package: tiles, marble, paint, doors, windows, kitchen, wardrobes, electrical, plumbing and sanitary, so the house is ready to occupy. Boundary wall, main gate, safety grills, driveway and landscaping are external works, added to either scope on request.</p></div>
       </details>
       <details>
         <summary>How long does construction take?</summary>
@@ -1031,7 +1049,7 @@ table.qt tr.sub td{background:#F4F8FC;font-weight:600;color:var(--navy)}
       </details>
       <details>
         <summary>What is not covered by these rates?</summary>
-        <div class="ans"><p>Land cost, basement, map approval and society fees, utility connections, soil investigation, lifts, solar systems, swimming pools, home automation, air conditioning, generators, furniture, and any specification above the standard finishing schedule. Each is quoted separately once the design is fixed.</p></div>
+        <div class="ans"><p>Land cost, basement, external works such as boundary wall, main gate and driveway unless added to the scope, map approval and society fees, utility connections, soil investigation, lifts, solar systems, swimming pools, home automation, air conditioning, generators, furniture, and any specification above the standard finishing schedule. Each is quoted separately once the design is fixed.</p></div>
       </details>
       <details>
         <summary>Can I get a detailed BOQ before signing?</summary>
@@ -1168,17 +1186,27 @@ table.qt tr.sub td{background:#F4F8FC;font-weight:600;color:var(--navy)}
       {t:"Kitchen", v:["Interwood","Kitchen Care","Premium MDF Kitchen"]},
       {t:"Wardrobes", v:["MDF Laminated","HDF Laminated"]},
       {t:"Hardware", v:["Hafele","Hettich","Yale"]},
-      {t:"Main gate & MS works", v:["MS main gate","MS door frames|16 GAUGE","MS safety grills","Boundary wall"]}
+      {t:"MS door frames", v:["MS door frames|16 GAUGE"]}
+    ],
+    "External works": [
+      {t:"Main gate", v:["MS main gate|16 GAUGE"]},
+      {t:"Safety grills", v:["MS safety grills"]},
+      {t:"Boundary wall", v:["A-Class Kiln Bricks","Cement plaster and paint"]}
     ]
   };
 
+  // "ext" categories show only when external works are added to the scope
   var BRAND_SCOPES = {
     "Structure": "gray",
     "Electrical": "finish",
     "Plumbing & sanitary": "finish",
     "Finishes": "finish",
-    "Joinery & hardware": "finish"
+    "Joinery & hardware": "finish",
+    "External works": "ext"
   };
+
+  // external works — outside both rates, added to the scope only when ticked in the estimator
+  var EXT_ITEMS = ["Boundary wall","Main gate — MS, 16 gauge","Safety grills","Driveway","Landscaping"];
 
   // ── formatting ────────────────────────────────
   function rs(n){ return "Rs " + Math.round(n).toLocaleString("en-US"); }
@@ -1231,7 +1259,12 @@ table.qt tr.sub td{background:#F4F8FC;font-weight:600;color:var(--navy)}
 
   // ── estimator ─────────────────────────────────
   var state = { plot: PLOTS[4], scope: "turnkey", area: PLOTS[4].area, custom:false, bmt:false, bmtArea: PLOTS[4].area/2,
-                customRates:false, rates:{g:GRAY, f:FIN, bg:BMT_GRAY, bf:BMT_FIN} };
+                customRates:false, rates:{g:GRAY, f:FIN, bg:BMT_GRAY, bf:BMT_FIN},
+                ext:false, extSel:EXT_ITEMS.map(function(){ return true; }), extAmt:0 };
+
+  // ticked external works, and their charge (0 = included in the quoted rates)
+  function extList(){ return state.ext ? EXT_ITEMS.filter(function(x, i){ return state.extSel[i]; }) : []; }
+  function extCost(){ return extList().length ? state.extAmt : 0; }
 
   // active rates — manual entries when "Enter rates manually" is selected, otherwise the standard 2026 rates
   function rates(){
@@ -1327,6 +1360,24 @@ table.qt tr.sub td{background:#F4F8FC;font-weight:600;color:var(--navy)}
     });
   });
 
+  var extOn = document.getElementById("extOn"), extWrap = document.getElementById("extWrap");
+  var extItems = document.getElementById("extItems"), extAmt = document.getElementById("extAmt");
+  extItems.innerHTML = EXT_ITEMS.map(function(x, i){
+    return '<label class="chkline"><input type="checkbox" data-i="' + i + '" checked> ' + x + '</label>';
+  }).join("");
+  extOn.addEventListener("change", function(){ state.ext = extOn.checked; extWrap.hidden = !state.ext; render(); });
+  extItems.addEventListener("change", function(e){
+    var i = e.target.getAttribute("data-i");
+    if(i === null) return;
+    state.extSel[+i] = e.target.checked;
+    render();
+  });
+  extAmt.addEventListener("input", function(){
+    var v = parseFloat(extAmt.value);
+    state.extAmt = (isFinite(v) && v > 0) ? v : 0;
+    render();
+  });
+
   var seg = document.getElementById("scopeSeg");
   Array.prototype.forEach.call(seg.querySelectorAll("button"), function(b){
     b.addEventListener("click", function(){
@@ -1383,7 +1434,12 @@ table.qt tr.sub td{background:#F4F8FC;font-weight:600;color:var(--navy)}
 
     var grayPart = (showG ? g : 0) + (showG ? bg : 0);
     var finPart  = (showF ? f : 0) + (showF ? bf : 0);
-    var total = grayPart + finPart;
+    var ext = extList(), extAmtV = extCost();
+    var total = grayPart + finPart + extAmtV;
+
+    document.getElementById("rowExt").hidden = !ext.length;
+    document.getElementById("oExt").textContent = extAmtV ? rs(extAmtV) : "Included";
+    document.getElementById("lExt").textContent = ext.length + (ext.length > 1 ? " ITEMS" : " ITEM") + (extAmtV ? " · LUMP SUM" : " · WITHIN RATES");
 
     document.getElementById("oGray").textContent = showG ? rs(g) : "— not in scope";
     document.getElementById("oFin").textContent  = showF ? rs(f) : "— not in scope";
@@ -1406,7 +1462,7 @@ table.qt tr.sub td{background:#F4F8FC;font-weight:600;color:var(--navy)}
       state.scope === "gray" ? "Gray structure cost" :
       state.scope === "finish" ? "Finishing cost" : "Total construction cost";
 
-    var gp = total ? grayPart/total*100 : 50;
+    var gp = (grayPart + finPart) ? grayPart/(grayPart + finPart)*100 : 50;
     document.getElementById("barG").style.width = gp + "%";
     document.getElementById("barF").style.width = (100-gp) + "%";
 
@@ -1454,6 +1510,7 @@ table.qt tr.sub td{background:#F4F8FC;font-weight:600;color:var(--navy)}
     document.getElementById("payBasis").textContent =
       "Based on a " + scopeName + " contract for " + sft(state.area || 0) +
       (state.bmt ? " plus a " + sft(state.bmtArea || 0) + " basement" : "") +
+      (extList().length ? ", with external works" + (extCost() ? " at " + rs(extCost()) : "") : "") +
       " — " + rs(total) + " total. Adjust the estimator to reprice.";
   }
 
@@ -1468,6 +1525,7 @@ table.qt tr.sub td{background:#F4F8FC;font-weight:600;color:var(--navy)}
       var sc = BRAND_SCOPES[cat] || "finish";
       if(sc === "gray" && !scopes.gray) return false;
       if(sc === "finish" && !scopes.finish) return false;
+      if(sc === "ext" && !extList().length) return false;
       return true;
     });
   }
@@ -1597,15 +1655,14 @@ table.qt tr.sub td{background:#F4F8FC;font-weight:600;color:var(--navy)}
   var GRAY_SCOPE = ["Site layout","Excavation","Foundation","PCC","RCC frame structure","Columns","Beams",
     "Roof slab","Brick masonry","Cement plaster","Staircase","Underground water tank","Overhead water tank"];
   var FIN_SCOPE = ["Floor tiles","Marble","Wall tiles","Paint","Doors","Windows","False ceiling / POP","Kitchen",
-    "Wardrobes","Electrical works","Plumbing works","Sanitary fixtures","Glass works","Boundary wall",
-    "Main gate — MS, 16 gauge","MS door frames — 16 gauge","Safety grills","Driveway","Landscaping"];
+    "Wardrobes","Electrical works","Plumbing works","Sanitary fixtures","Glass works","MS door frames — 16 gauge"];
   var EXCLUSIONS = ["Land cost, transfer and possession charges","Map approval, NOC and housing society fees",
     "Utility connections — electricity, gas, water and sewerage","Soil investigation report and special foundations arising from it",
     "Passenger lift, solar PV system and net metering","Swimming pool, filtration plant and pool deck",
     "Home automation, CCTV, access control and structured cabling","Air conditioning, generator, UPS and stabilisers",
     "Furniture, curtains, blinds and loose furnishings","Any specification above the standard schedule above"];
   var TERMS = [
-    "Basis of measurement — all quantities are measured on covered area only, as shown on the approved drawings. Boundary wall, main gate, safety grills, driveway and landscaping are included in the finishing rate and are not measured separately.",
+    "Basis of measurement — all quantities are measured on covered area only, as shown on the approved drawings. External works — boundary wall, main gate, safety grills, driveway and landscaping — are part of this contract only where listed in the scope of work above.",
     "This quotation is valid for 30 days from the date of issue. Rates are subject to revision thereafter.",
     "Rates are based on the standard specification and material schedule stated above. Any change in specification, design or covered area will be re-measured and re-quoted.",
     "Government taxes, duties and levies applicable at the time of billing are extra unless expressly included.",
@@ -1656,7 +1713,8 @@ table.qt tr.sub td{background:#F4F8FC;font-weight:600;color:var(--navy)}
 
     var r = rates();
     var g = a*r.g, f = a*r.f, bg = ba*r.bg, bf = ba*r.bf;
-    var total = (showG ? g+bg : 0) + (showF ? f+bf : 0);
+    var ext = extList(), extAmtV = extCost();
+    var total = (showG ? g+bg : 0) + (showF ? f+bf : 0) + extAmtV;
 
     var scopeName = state.scope === "gray" ? "Gray Structure Construction"
                   : state.scope === "finish" ? "Finishing Works"
@@ -1689,6 +1747,11 @@ table.qt tr.sub td{background:#F4F8FC;font-weight:600;color:var(--navy)}
         'Floor finish, paint, doors, lighting, power, drainage, ventilation</span></td>'+
         '<td class="n">'+Math.round(ba).toLocaleString("en-US")+'</td><td class="n">'+rateTxt(r.bf)+'</td><td class="n">'+rs(bf)+'</td></tr>';
     }
+    if(ext.length){
+      sr++; rows += '<tr><td class="c">'+sr+'</td><td><b>External works</b><br><span style="color:#5A6B82;font-size:9.6px">'+
+        esc(ext.join(", "))+'</span></td>'+
+        '<td class="n">—</td><td class="n">'+(extAmtV ? 'Lump sum' : '—')+'</td><td class="n">'+(extAmtV ? rs(extAmtV) : 'Included')+'</td></tr>';
+    }
 
     // ── payment rows
     var payRows = "", running = 0;
@@ -1700,6 +1763,13 @@ table.qt tr.sub td{background:#F4F8FC;font-weight:600;color:var(--navy)}
 
     var qtyTotal = a + (state.bmt ? ba : 0);
     var blended  = qtyTotal ? Math.round(total/qtyTotal) : 0;
+
+    // exclusions name any external works left out of the scope
+    var extMissing = EXT_ITEMS.filter(function(x){ return ext.indexOf(x) === -1; })
+      .map(function(x){ return x.split(" — ")[0].toLowerCase(); });
+    var quoteExclusions = EXCLUSIONS.slice(0, -1)
+      .concat(extMissing.length ? ["External works — " + extMissing.join(", ")] : [])
+      .concat(EXCLUSIONS.slice(-1));
 
     var quoteTerms = TERMS.filter(function(t, idx){
       if(!showG && idx === 12) return false;
@@ -1716,6 +1786,10 @@ table.qt tr.sub td{background:#F4F8FC;font-weight:600;color:var(--navy)}
         FIN_SCOPE.map(function(x){return '<li>'+esc(x)+'</li>';}).join('')+'</ul></div>';
     }
     var qcolsStyle = (showG && showF) ? '' : ' style="grid-template-columns:1fr;"';
+    var extScopeHtml = ext.length
+      ? '<div class="qcols" style="grid-template-columns:1fr;border-top:0"><div><h4>External works</h4><ul class="qlist">'+
+          ext.map(function(x){return '<li>'+esc(x)+'</li>';}).join('')+'</ul></div></div>'
+      : '';
 
     var specHtml = "";
     if(showG){
@@ -1728,6 +1802,12 @@ table.qt tr.sub td{background:#F4F8FC;font-weight:600;color:var(--navy)}
       specHtml += '<div>'+
         '<h4 style="font-family:\'Archivo\',sans-serif;font-weight:700;font-size:11.4px;color:var(--navy);margin:0 0 6px">Standard finishing</h4>'+
         '<table class="spec"><tbody>'+specRows("finish")+'</tbody></table>'+
+      '</div>';
+    }
+    if(ext.length){
+      specHtml += '<div style="margin-top:14px">'+
+        '<h4 style="font-family:\'Archivo\',sans-serif;font-weight:700;font-size:11.4px;color:var(--navy);margin:0 0 6px">External works</h4>'+
+        '<table class="spec"><tbody>'+specRows("ext")+'</tbody></table>'+
       '</div>';
     }
     if(!specHtml){
@@ -1798,14 +1878,14 @@ table.qt tr.sub td{background:#F4F8FC;font-weight:600;color:var(--navy)}
     '<div class="qsection"><h2><i>05</i> Scope of work</h2>'+
       '<div class="qcols"'+qcolsStyle+'>'+
         scopeHtml+
-      '</div></div>'+
+      '</div>'+extScopeHtml+'</div>'+
 
     '<div class="qsection"><h2><i>06</i> Material specification</h2>'+
       specHtml+
       '<div class="inwords" style="margin-top:6px;border-top:1px solid #C9D6E6"><b>Note</b>Final brand selection within each approved category is made jointly with the client before procurement.</div></div>'+
 
     '<div class="qsection"><h2><i>07</i> Exclusions</h2>'+
-      '<ol class="terms">'+EXCLUSIONS.map(function(x){return '<li>'+esc(x)+'</li>';}).join('')+'</ol></div>'+
+      '<ol class="terms">'+quoteExclusions.map(function(x){return '<li>'+esc(x)+'</li>';}).join('')+'</ol></div>'+
 
     '<div class="qsection"><h2><i>08</i> Terms and conditions</h2>'+
       '<ol class="terms">'+quoteTerms.map(function(x){return '<li>'+esc(x)+'</li>';}).join('')+'</ol></div>'+
