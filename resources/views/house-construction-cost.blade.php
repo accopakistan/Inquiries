@@ -610,9 +610,7 @@ table.qt tr.sub td{background:#F4F8FC;font-weight:600;color:var(--navy)}
           <label class="chkline"><input type="checkbox" id="extOn"> Add external works to the scope of work</label>
           <div id="extWrap" hidden style="margin-top:12px">
             <div id="extItems"></div>
-            <label class="ctrl-label" for="extAmt" style="margin-top:14px">Charge for external works (Rs, optional)</label>
-            <input type="number" id="extAmt" min="0" step="1000" value="0" inputmode="numeric">
-            <div class="hint">Leave at 0 to include the ticked items within the quoted rates. An amount is added to the total, the payment schedule and the PDF as a separate line.</div>
+            <div class="hint">Ticked items are listed in the quotation's scope of work, within the quoted rates. Unticked items are listed under exclusions.</div>
           </div>
         </div>
 
@@ -746,7 +744,7 @@ table.qt tr.sub td{background:#F4F8FC;font-weight:600;color:var(--navy)}
     </div>
     <p class="tbl-note"><b>Combined turnkey rate: <span class="mono">Rs 5,650 per square foot</span> of covered area.</b><br>
     Basis of measurement — all quantities are measured on covered area only, as shown on the approved drawings.<br>
-    <b>External works</b> — boundary wall, main gate (MS, 16 gauge), safety grills, driveway and landscaping — are not part of either rate. They are added to the scope of work on request, with any charge shown as a separate line.</p>
+    <b>External works</b> — boundary wall, main gate (MS, 16 gauge), safety grills, driveway and landscaping — are not part of either rate. They are added to the scope of work on request.</p>
 
     <div class="card" style="margin-top:24px;border-left:4px solid var(--blue-bright)">
       <h3>Optional basement — priced separately</h3>
@@ -1272,11 +1270,10 @@ table.qt tr.sub td{background:#F4F8FC;font-weight:600;color:var(--navy)}
   // ── estimator ─────────────────────────────────
   var state = { plot: PLOTS[4], scope: "turnkey", area: PLOTS[4].area, custom:false, bmt:false, bmtArea: PLOTS[4].area/2,
                 customRates:false, rates:{g:GRAY, f:FIN, bg:BMT_GRAY, bf:BMT_FIN},
-                ext:false, extSel:EXT_ITEMS.map(function(){ return true; }), extAmt:0 };
+                ext:false, extSel:EXT_ITEMS.map(function(){ return true; }) };
 
-  // ticked external works, and their charge (0 = included in the quoted rates)
+  // ticked external works — listed in the scope of work, within the quoted rates (no cost line)
   function extList(){ return state.ext ? EXT_ITEMS.filter(function(x, i){ return state.extSel[i]; }) : []; }
-  function extCost(){ return extList().length ? state.extAmt : 0; }
 
   // active rates — manual entries when "Enter rates manually" is selected, otherwise the standard 2026 rates
   function rates(){
@@ -1373,7 +1370,7 @@ table.qt tr.sub td{background:#F4F8FC;font-weight:600;color:var(--navy)}
   });
 
   var extOn = document.getElementById("extOn"), extWrap = document.getElementById("extWrap");
-  var extItems = document.getElementById("extItems"), extAmt = document.getElementById("extAmt");
+  var extItems = document.getElementById("extItems");
   extItems.innerHTML = EXT_ITEMS.map(function(x, i){
     return '<label class="chkline"><input type="checkbox" data-i="' + i + '" checked> ' + x + '</label>';
   }).join("");
@@ -1382,11 +1379,6 @@ table.qt tr.sub td{background:#F4F8FC;font-weight:600;color:var(--navy)}
     var i = e.target.getAttribute("data-i");
     if(i === null) return;
     state.extSel[+i] = e.target.checked;
-    render();
-  });
-  extAmt.addEventListener("input", function(){
-    var v = parseFloat(extAmt.value);
-    state.extAmt = (isFinite(v) && v > 0) ? v : 0;
     render();
   });
 
@@ -1446,12 +1438,12 @@ table.qt tr.sub td{background:#F4F8FC;font-weight:600;color:var(--navy)}
 
     var grayPart = (showG ? g : 0) + (showG ? bg : 0);
     var finPart  = (showF ? f : 0) + (showF ? bf : 0);
-    var ext = extList(), extAmtV = extCost();
-    var total = grayPart + finPart + extAmtV;
+    var ext = extList();
+    var total = grayPart + finPart;
 
     document.getElementById("rowExt").hidden = !ext.length;
-    document.getElementById("oExt").textContent = extAmtV ? rs(extAmtV) : "Included";
-    document.getElementById("lExt").textContent = ext.length + (ext.length > 1 ? " ITEMS" : " ITEM") + (extAmtV ? " · LUMP SUM" : " · WITHIN RATES");
+    document.getElementById("oExt").textContent = "In scope";
+    document.getElementById("lExt").textContent = ext.length + (ext.length > 1 ? " ITEMS" : " ITEM") + " · WITHIN RATES";
 
     document.getElementById("oGray").textContent = showG ? rs(g) : "— not in scope";
     document.getElementById("oFin").textContent  = showF ? rs(f) : "— not in scope";
@@ -1522,7 +1514,7 @@ table.qt tr.sub td{background:#F4F8FC;font-weight:600;color:var(--navy)}
     document.getElementById("payBasis").textContent =
       "Based on a " + scopeName + " contract for " + sft(state.area || 0) +
       (state.bmt ? " plus a " + sft(state.bmtArea || 0) + " basement" : "") +
-      (extList().length ? ", with external works" + (extCost() ? " at " + rs(extCost()) : "") : "") +
+      (extList().length ? ", with external works in scope" : "") +
       " — " + rs(total) + " total. Adjust the estimator to reprice.";
   }
 
@@ -1733,8 +1725,8 @@ table.qt tr.sub td{background:#F4F8FC;font-weight:600;color:var(--navy)}
 
     var r = rates();
     var g = a*r.g, f = a*r.f, bg = ba*r.bg, bf = ba*r.bf;
-    var ext = extList(), extAmtV = extCost();
-    var total = (showG ? g+bg : 0) + (showF ? f+bf : 0) + extAmtV;
+    var ext = extList();
+    var total = (showG ? g+bg : 0) + (showF ? f+bf : 0);
 
     var scopeName = state.scope === "gray" ? "Gray Structure Construction"
                   : state.scope === "finish" ? "Finishing Works"
@@ -1766,11 +1758,6 @@ table.qt tr.sub td{background:#F4F8FC;font-weight:600;color:var(--navy)}
       sr++; rows += '<tr><td class="c">'+sr+'</td><td><b>Basement — finishing</b><br><span style="color:#5A6B82;font-size:9.6px">'+
         'Floor finish, paint, doors, lighting, power, drainage, ventilation</span></td>'+
         '<td class="n">'+Math.round(ba).toLocaleString("en-US")+'</td><td class="n">'+rateTxt(r.bf)+'</td><td class="n">'+rs(bf)+'</td></tr>';
-    }
-    if(ext.length){
-      sr++; rows += '<tr><td class="c">'+sr+'</td><td><b>External works</b><br><span style="color:#5A6B82;font-size:9.6px">'+
-        esc(ext.join(", "))+'</span></td>'+
-        '<td class="n">—</td><td class="n">'+(extAmtV ? 'Lump sum' : '—')+'</td><td class="n">'+(extAmtV ? rs(extAmtV) : 'Included')+'</td></tr>';
     }
 
     // ── payment rows
