@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\Inquiry;
 use App\Models\ProjectType;
+use App\Support\InquiryHints;
+use App\Support\QuotationPages;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Response;
 
@@ -188,7 +190,27 @@ class InquiryController extends Controller
             'name' => $inquiry->name,
             'location' => $inquiry->location,
             'project_type' => optional($inquiry->projectType)->title,
+            'description' => $inquiry->description,
+            'hints' => (object) InquiryHints::read($inquiry->description, $inquiry->location),
         ]);
+    }
+
+    /**
+     * Prepare Quotation: open the quotation page for this inquiry — the one picked (?page=house|plaza|hospital),
+     * else the one its project category maps to, else a page asking which one to use.
+     */
+    public function prepareQuotation(Request $request, $id)
+    {
+        $inquiry = Inquiry::with('projectType')->findOrFail($id);
+        $page = $request->query('page');
+        if (!QuotationPages::exists($page)) {
+            $page = QuotationPages::forCategory(optional($inquiry->projectType)->title);
+        }
+        if ($page) {
+            return redirect(QuotationPages::urlFor($page, $inquiry->id));
+        }
+
+        return view('prepare-quotation', ['inquiry' => $inquiry, 'pages' => QuotationPages::PAGES]);
     }
 
     /**

@@ -364,6 +364,7 @@ table.qt tr.sub td{background:#F4F8FC;font-weight:600;color:var(--navy)}
             <button type="button" class="btn" id="qInqGo">Fetch client</button>
           </div>
           <div class="lookstat" id="qInqStat" role="status"></div>
+          <div id="qInqSource"></div>
           <div class="grid2" style="margin-top:10px">
             <div><label class="mini" for="qClient">Client name</label><input type="text" id="qClient" class="txt" placeholder="e.g. Dr Bilal Alvi"></div>
             <div><label class="mini" for="qSal">Salutation</label>
@@ -650,9 +651,25 @@ table.qt tr.sub td{background:#F4F8FC;font-weight:600;color:var(--navy)}
 
   // ── inquiry lookup — public/js/inquiry-lookup.js ──
   function attachLookup(){
-    return InquiryLookup.attach({url:LOOKUP_URL, input:"qInq", button:"qInqGo", status:"qInqStat", onFound:function(d){
+    return InquiryLookup.attach({url:LOOKUP_URL, input:"qInq", button:"qInqGo", status:"qInqStat", source:"qInqSource", onFound:function(d){
+      var h = d.hints, set = InquiryLookup.set, got = ["client name"], todo = [];
       document.getElementById("qClient").value = d.name || "";
-      if(d.location) document.getElementById("qLoc").value = d.location;
+      if(d.location){ document.getElementById("qLoc").value = d.location; got.push("location"); }
+      if(h.hospital_type && set("qType", h.hospital_type, "change")) got.push(h.hospital_type.toLowerCase());
+      if(h.beds){ set("qBeds", h.beds); got.push(h.beds + " beds"); }
+      if(h.plot){
+        // frontage × depth goes in as SFT; the other units exist on the page as they are
+        set("pUnit", h.plot.w ? "sft" : h.plot.unit, "change");
+        set("pVal", h.plot.w ? h.plot.sft : h.plot.value);
+        got.push("plot " + InquiryLookup.plotText(h.plot));
+      } else todo.push("plot size");
+      if(h.floors){
+        if(h.floors.b != null) set("vB", h.floors.b);
+        if(h.floors.u != null) set("vU", h.floors.u);
+        got.push("floors (" + h.floors.text + ")");
+      } else todo.push("basements and floors");
+      todo.push("covered area of each floor", "drawings");
+      return {applied:got, notes:todo};
     }});
   }
 

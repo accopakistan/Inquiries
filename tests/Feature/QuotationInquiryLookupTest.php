@@ -18,6 +18,11 @@ class QuotationInquiryLookupTest extends TestCase
         $this->get('/quotation/inquiry/1')->assertRedirect();
     }
 
+    public function test_guests_cannot_use_prepare_quotation()
+    {
+        $this->get('/inquiries/1/quotation')->assertRedirect('/login');
+    }
+
     public function test_every_quotation_page_loads_the_lookup()
     {
         $this->assertFileExists(public_path('js/inquiry-lookup.js'));

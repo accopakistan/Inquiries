@@ -558,6 +558,7 @@ table.qt tr.sub td{background:#F4F8FC;font-weight:600;color:var(--navy)}
 
     <div class="est">
       <div class="est-controls">
+        <div id="qInqSource"></div>
         <label class="ctrl-label" id="plotlabel">Plot size</label>
         <div class="chips" role="group" aria-labelledby="plotlabel" id="plotChips"></div>
 
@@ -1678,9 +1679,25 @@ table.qt tr.sub td{background:#F4F8FC;font-weight:600;color:var(--navy)}
     return d.getDate() + " " + m[d.getMonth()] + " " + d.getFullYear();
   }
   // client ID — the inquiry number, fetched from the inquiries list (public/js/inquiry-lookup.js)
-  var INQ = InquiryLookup.attach({url:"{{ url('/quotation/inquiry') }}", input:"qInq", button:"qInqGo", status:"qInqStat", onFound:function(d){
+  var INQ = InquiryLookup.attach({url:"{{ url('/quotation/inquiry') }}", input:"qInq", button:"qInqGo", status:"qInqStat", source:"qInqSource", onFound:function(d){
+    var h = d.hints, got = ["client name"], todo = [];
     document.getElementById("qClient").value = d.name || "";
-    if(d.location) document.getElementById("qSite").value = d.location;
+    if(d.location){ document.getElementById("qSite").value = d.location; got.push("location"); }
+    if(h.plot){
+      // only the standard plot sizes exist here; anything else needs the covered area typed in
+      var want = InquiryLookup.plotText(h.plot);
+      var chip = Array.prototype.find.call(chips.children, function(c){ return c.textContent === want; });
+      if(chip){ chip.click(); got.push("plot " + want); }
+      else todo.push("plot " + want + " is not a standard size — pick the nearest and set the covered area");
+    } else todo.push("plot size");
+    if(h.scope === "gray" || h.scope === "finish" || h.scope === "turnkey"){
+      document.querySelector('#scopeSeg [data-scope="' + h.scope + '"]').click();
+      got.push({gray:"gray structure", finish:"finishing only", turnkey:"turnkey"}[h.scope]);
+    } else if(h.scope === "design") todo.push("client asked for design only — this quotation is for construction");
+    if(h.floors && h.floors.b > 0){ document.querySelector('#bmtSeg [data-bmt="1"]').click(); got.push("basement"); }
+    if(h.floors && h.floors.u != null) todo.push("description mentions " + h.floors.text + " — adjust the covered area");
+    todo.push("covered area", "external works and plinth beam if needed");
+    return {applied:got, notes:todo};
   }});
 
   function refNo(){

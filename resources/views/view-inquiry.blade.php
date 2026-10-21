@@ -9,6 +9,29 @@
     </div>
     
     <div class="d-flex flex-wrap gap-2 page-header-actions">
+        @php
+            $quotePages = \App\Support\QuotationPages::PAGES;
+            $quotePage = \App\Support\QuotationPages::forCategory(optional($inquiry->projectType)->title);
+        @endphp
+        {{-- Prepare Quotation: opens the page for this category with the inquiry filled in; the arrow picks another page --}}
+        <div class="d-flex flex-grow-1 flex-md-grow-0" style="gap: 2px;">
+            <a href="{{ route('inquiry.quotation', $inquiry->id) }}" class="modern-btn btn-primary-modern flex-grow-1" style="padding: 10px 18px !important;"
+               title="{{ $quotePage ? 'Opens the ' . strtolower($quotePages[$quotePage]['label']) . ' quotation with this inquiry filled in' : 'Choose which quotation to prepare' }}">
+                <i class="bi bi-file-earmark-text"></i> Prepare Quotation{{ $quotePage ? ' · ' . $quotePages[$quotePage]['short'] : '' }}
+            </a>
+            <div class="dropdown">
+                <button type="button" class="modern-btn btn-primary-modern dropdown-toggle h-100" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Choose quotation type" style="padding: 10px 12px !important;"></button>
+                <ul class="dropdown-menu dropdown-menu-end shadow border-0 mt-2 p-2" style="background-color: var(--bg-surface-solid); border-radius: var(--border-radius-md);">
+                    @foreach($quotePages as $key => $p)
+                        <li>
+                            <a class="dropdown-item py-2" href="{{ route('inquiry.quotation', ['id' => $inquiry->id, 'page' => $key]) }}">
+                                <i class="bi {{ $p['icon'] }} me-2 text-primary"></i> {{ $p['label'] }} quotation
+                            </a>
+                        </li>
+                    @endforeach
+                </ul>
+            </div>
+        </div>
         <a href="{{ url('/update-inquiry-data', $inquiry->id) }}" class="modern-btn btn-primary-modern flex-grow-1 flex-md-grow-0" style="padding: 10px 18px !important;">
             <i class="bi bi-pencil-square"></i> Edit Profile
         </a>

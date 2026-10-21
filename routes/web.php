@@ -56,4 +56,5 @@ Route::middleware(['login'])->group(function () {
     Route::view('/commercial-plaza-cost-calculator', 'commercial-plaza-cost')->name('commercial-plaza-cost-calculator');
     Route::view('/hospital-design-quotation', 'hospital-design-quotation')->name('hospital-design-quotation');
     Route::get('/quotation/inquiry/{id}', [InquiryController::class, 'quotationClient'])->whereNumber('id')->name('quotation.inquiry');
+    Route::get('/inquiries/{id}/quotation', [InquiryController::class, 'prepareQuotation'])->whereNumber('id')->name('inquiry.quotation');
 });

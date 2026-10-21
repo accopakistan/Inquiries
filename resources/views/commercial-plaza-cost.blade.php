@@ -618,6 +618,7 @@ ol.deliv li{padding:3px 0;break-inside:avoid}
 
     <div class="est">
       <div class="est-controls">
+        <div id="qInqSource"></div>
         <div class="field">
           <span class="ctrl-label">Location</span>
           <div class="grid2">
@@ -2011,9 +2012,33 @@ ol.deliv li{padding:3px 0;break-inside:avoid}
   function today(){ return dateTxt(new Date()); }
   function validTill(){ var d = new Date(); d.setDate(d.getDate() + 30); return dateTxt(d); }
   // client ID — the inquiry number, fetched from the inquiries list (public/js/inquiry-lookup.js)
-  var INQ = InquiryLookup.attach({url:"{{ url('/quotation/inquiry') }}", input:"qInq", button:"qInqGo", status:"qInqStat", onFound:function(d){
+  var INQ = InquiryLookup.attach({url:"{{ url('/quotation/inquiry') }}", input:"qInq", button:"qInqGo", status:"qInqStat", source:"qInqSource", onFound:function(d){
+    var h = d.hints, set = InquiryLookup.set, got = ["client name"], todo = [];
     document.getElementById("qClient").value = d.name || "";
-    if(d.location) document.getElementById("qSite").value = d.location;
+    if(d.location){ document.getElementById("qSite").value = d.location; got.push("location"); }
+    if(h.city){ set("citySel", h.city, "change"); got.push("city " + cityObj().label); }
+    if(h.auth){
+      // society first: choosing it resets the coverage rules, and the plot and floors below go on top
+      set("authSel", h.auth, "change"); got.push("society " + authObj().label);
+      if(d.location) document.getElementById("qSociety").value = d.location;
+    }
+    if(h.plot){
+      var want = InquiryLookup.plotText(h.plot);
+      var preset = PRESETS.filter(function(p){ return p.label === want || p.w * p.d === h.plot.sft; })[0];
+      if(h.plot.w){ set("cW", h.plot.w); set("cD", h.plot.d); got.push("plot " + want); }
+      else if(preset){ chips.querySelector('[data-v="' + preset.id + '"]').click(); got.push("plot " + preset.label); }
+      else todo.push("plot " + want + " (" + fmt(h.plot.sft) + " SFT) — enter its frontage and depth");
+    } else todo.push("plot size");
+    if(h.floors){
+      if(h.floors.b != null) set("vB", h.floors.b);
+      if(h.floors.u != null) set("vU", h.floors.u);
+      got.push("floors (" + h.floors.text + ")");
+    } else todo.push("basements and floors");
+    var sc = {gray:"gray", turnkey:"turnkey", design:"none"}[h.scope];
+    if(sc){ document.querySelector('#scopeSeg [data-v="' + sc + '"]').click(); got.push({gray:"gray structure", turnkey:"turnkey", none:"design only"}[sc]); }
+    else if(h.scope === "finish") todo.push("client asked for finishing — choose shell & core or turnkey");
+    todo.push("coverage rules", "add-ons");
+    return {applied:got, notes:todo};
   }});
 
   function refNo(){
