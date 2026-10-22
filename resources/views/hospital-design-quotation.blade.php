@@ -441,6 +441,13 @@ table.qt tr.sub td{background:#F4F8FC;font-weight:600;color:var(--navy)}
         </div>
 
         <div class="field">
+          <span class="ctrl-label">Completion time</span>
+          <label class="mini" for="days">Design completion (days)</label>
+          <input type="number" id="days" min="1" step="1" inputmode="numeric" placeholder="Enter days">
+          <div class="hint">Shown in the quotation as the time to deliver the drawings, counted from the advance payment.</div>
+        </div>
+
+        <div class="field">
           <span class="ctrl-label">Quotation options</span>
           <label class="chkline"><input type="checkbox" id="optProfile" checked> Include "Why ACCO" — PHC-compliant hospital design profile</label>
         </div>
@@ -453,6 +460,7 @@ table.qt tr.sub td{background:#F4F8FC;font-weight:600;color:var(--navy)}
         <div class="out-row"><div class="k">Design rate<em>PER SFT OF COVERED AREA</em></div><div class="v" id="oRate">—</div></div>
         <div class="out-row"><div class="k">Drawings<em id="oDrwBreak">—</em></div><div class="v" id="oDrw">—</div></div>
         <ul class="out-list" id="oDrwList"></ul>
+        <div class="out-row"><div class="k">Completion time<em id="oDaysBreak">DESIGN DELIVERY</em></div><div class="v" id="oDays">—</div></div>
 
         <div class="note-box" id="calcWarn" role="status"></div>
         <div class="total">
@@ -557,6 +565,7 @@ table.qt tr.sub td{background:#F4F8FC;font-weight:600;color:var(--navy)}
 
   // ── formatting ────────────────────────────────
   function rs(n){ return "Rs " + fmt(n); }
+  function months(d){ return (Math.round(d/30*2)/2).toString(); }   // to the nearest half month, as on the other quotation pages
   function qty(n){ return (Math.round(n*100)/100).toLocaleString("en-US", {maximumFractionDigits:2}); }
   function sft(n){ return qty(n) + " SFT"; }
   function words(n){
@@ -572,7 +581,8 @@ table.qt tr.sub td{background:#F4F8FC;font-weight:600;color:var(--navy)}
   function val(id){ return document.getElementById(id).value.trim(); }
 
   // ── state ─────────────────────────────────────
-  var state = {plot:10, unit:"kanal", cov:C.COVERAGE, b:1, u:3, other:0, rate:C.RATE, over:{}, drw:{}};
+  var state = {plot:10, unit:"kanal", cov:C.COVERAGE, b:1, u:3, other:0, rate:C.RATE, over:{}, drw:{},
+               days:0};   // design completion time entered for the quotation (0 = not entered)
   C.DRAWINGS.forEach(function(d){ state.drw[d.id] = d.on; });
 
   function cfgNow(){
@@ -599,6 +609,7 @@ table.qt tr.sub td{background:#F4F8FC;font-weight:600;color:var(--navy)}
   numInput("cov", function(v){ state.cov = Math.min(100, v); state.over = {}; renderAll(); });
   numInput("other", function(v){ state.other = v; render(); });
   numInput("rate", function(v){ state.rate = v; render(); });
+  numInput("days", function(v){ state.days = Math.round(v); render(); });
 
   function setCount(k, v){
     state[k] = Math.max(0, Math.min(C.MAX[k], Math.round(v)));
@@ -726,6 +737,8 @@ table.qt tr.sub td{background:#F4F8FC;font-weight:600;color:var(--navy)}
     document.getElementById("oDrw").textContent = d.length + " of " + C.DRAWINGS.length;
     document.getElementById("oDrwBreak").textContent = d.length ? "TICKED BELOW" : "NONE SELECTED";
     document.getElementById("oDrwList").innerHTML = d.map(function(x){ return "<li>" + esc(x.label) + "</li>"; }).join("");
+    document.getElementById("oDays").textContent = state.days ? state.days + " days" : "Enter days";
+    document.getElementById("oDaysBreak").textContent = state.days ? "≈ " + months(state.days) + " MONTHS · DESIGN DELIVERY" : "DESIGN DELIVERY";
     document.getElementById("oTotal").textContent = rs(e.fee);
     document.getElementById("oAlt").textContent = e.fee ? words(e.fee) + "   ·   " + sft(e.total) + " × Rs " + qty(cfg.rate) : "";
   }
@@ -772,6 +785,7 @@ table.qt tr.sub td{background:#F4F8FC;font-weight:600;color:var(--navy)}
       '<tr><td class="k">Plot size</td><td>' + qty(cfg.plot) + ' ' + esc(unit.label) + ' &nbsp;(' + fmt(e.plotSft) + ' SFT)</td>' +
           '<td class="k">Floors</td><td><b>' + e.floors + '</b> &mdash; ' + esc(e.desc) + '</td></tr>' +
       '<tr><td class="k">Total covered area</td><td><b>' + sft(e.total) + '</b></td><td class="k">Design rate</td><td>Rs ' + qty(cfg.rate) + ' / SFT</td></tr>' +
+      '<tr><td class="k">Completion period</td><td colspan="3"><b>' + state.days + ' days</b> from receipt of the advance payment (&asymp; ' + months(state.days) + ' months)</td></tr>' +
       '</tbody></table></div>';
 
     var html2 = head("Covered area schedule") + '<table class="qt"><thead><tr><th>Floor</th><th class="n">Covered area (SFT)</th></tr></thead><tbody>' +
@@ -844,7 +858,17 @@ table.qt tr.sub td{background:#F4F8FC;font-weight:600;color:var(--navy)}
     window.scrollTo(0,0);
   }
 
-  document.getElementById("qGen").addEventListener("click", function(){ buildQuote(); showQuote(true); });
+  document.getElementById("qGen").addEventListener("click", function(){
+    // the completion time is always entered by hand
+    if(!state.days){
+      var d = document.getElementById("days");
+      d.style.borderColor = "#B3261E";
+      d.scrollIntoView({block:"center"});
+      d.focus();
+      return;
+    }
+    buildQuote(); showQuote(true);
+  });
   document.getElementById("qBack").addEventListener("click", function(){ showQuote(false); });
 
   // filename used for both save actions — inquiry number first, then client name

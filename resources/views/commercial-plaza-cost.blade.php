@@ -722,6 +722,15 @@ ol.deliv li{padding:3px 0;break-inside:avoid}
         </div>
 
         <div class="field">
+          <span class="ctrl-label">Completion time</span>
+          <div class="grid2">
+            <div id="cDaysBox"><label class="mini" for="cDays">Construction (days)</label><input type="number" id="cDays" min="1" step="1" inputmode="numeric" placeholder="Enter days"></div>
+            <div id="dDaysBox"><label class="mini" for="dDays">Design &amp; approval (days)</label><input type="number" id="dDays" min="1" step="1" inputmode="numeric" placeholder="Enter days"></div>
+          </div>
+          <div class="hint" id="daysHint"></div>
+        </div>
+
+        <div class="field">
           <span class="ctrl-label">Rates</span>
           <div class="seg" role="group" aria-label="Rates" id="rateSeg">
             <button type="button" data-v="std" aria-pressed="true">Standard 2026 rates</button>
@@ -859,7 +868,7 @@ ol.deliv li{padding:3px 0;break-inside:avoid}
         <h3>Gray structure</h3>
         <div class="price">Rs 3,700<small>PER SFT</small></div>
         <ul class="check">
-          <li>RCC frame for 100 psf+ live load and 20–30 ft spans</li><li>Columns, beams and slabs, Grade 60 steel, 4,000 psi concrete</li>
+          <li>RCC frame for 100 psf+ live load and 20–30 ft spans</li><li>Columns, beams and slabs, Grade 60 steel; concrete 4,000 psi in columns, 3,000 psi elsewhere</li>
           <li>Stair core and lift shaft walls</li><li>Brick / block masonry and internal plaster</li><li>Conduits and sleeves</li><li>Roof slab and parapet</li>
         </ul>
       </div>
@@ -1310,7 +1319,8 @@ ol.deliv li{padding:3px 0;break-inside:avoid}
     "Structure": [
       {t:"Cement", v:["Maple Leaf","Bestway","DG Khan","Lucky","Fauji"]},
       {t:"Steel — Grade 60", v:["Amreli Steels|60,000 PSI","Mughal Steel|60,000 PSI","Agha Steel|60,000 PSI"]},
-      {t:"Concrete", v:["Ready-mix, 4,000 psi","28-day cube tests per pour"]},
+      // spec: a specification, not a brand list — joined with "; " and no "or equivalent" in the quotation
+      {t:"Concrete strength", spec:true, v:["Columns — 4,000 psi","Raft, retaining walls, all slabs, lift well, shared walls, roof beams and stairs — 3,000 psi","Strength achieved at 28 days"]},
       {t:"Waterproofing", v:["Sika Pakistan","Master Builders (BASF)","Fosroc"]},
       {t:"Masonry", v:["A-class kiln bricks","Concrete blocks"]}
     ],
@@ -1383,7 +1393,8 @@ ol.deliv li{padding:3px 0;break-inside:avoid}
     b:1, m:true, u:4, lmr:true, clear:0, setback:0, applied:null, over:{},
     bmtUse:"shop", scope:"turnkey", level:"std",
     design:true, customRates:false,
-    rates:extend(STD, {}), dr:extend(DESIGN, {}), ads:{}
+    rates:extend(STD, {}), dr:extend(DESIGN, {}), ads:{},
+    cDays:0, dDays:0   // completion times entered for the quotation — construction, and design & approval (0 = not entered)
   };
   ADDONS.forEach(function(ad){ state.ads[ad.id] = {on:false, qty:null, rate:null, opt:ad.defOpt || null}; });
 
@@ -1557,6 +1568,16 @@ ol.deliv li{padding:3px 0;break-inside:avoid}
     state.applied = "DHA " + ph.label + " allowance — " + configStr(ph.b, ph.m, ph.u) + ", max height " + ph.h;
     state.appliedPh = ph.id;
     renderAll();
+  });
+
+  [["cDays","cDays"],["dDays","dDays"]].forEach(function(f){
+    var el = document.getElementById(f[0]);
+    el.addEventListener("input", function(){
+      var v = parseInt(el.value, 10);
+      state[f[1]] = v > 0 ? v : 0;
+      el.style.borderColor = "";
+      render();
+    });
   });
 
   document.getElementById("lmrChk").addEventListener("change", function(e){ state.lmr = e.target.checked; pruneOver(); renderAll(); });
@@ -1751,11 +1772,19 @@ ol.deliv li{padding:3px 0;break-inside:avoid}
       qty(a.total) + " SFT × Rs " + qty(cfg.dr.sft) + " per SFT = " + rs(fee.raw) + ", minimum " + rs(cfg.dr.min) + "." +
       (fee.atMin ? " The minimum applies." : "");
 
-    document.getElementById("oDur").textContent = (hasG ? dur.total : dur.pre) + " days";
+    // completion times are entered by hand; the programme estimate is only shown as a suggestion
+    document.getElementById("cDaysBox").hidden = !hasG;
+    document.getElementById("dDaysBox").hidden = !fee;
+    var main = hasG ? state.cDays : state.dDays;
+    document.getElementById("oDur").textContent = main ? main + " days" : "Enter days";
     document.getElementById("oDurBreak").textContent = hasG
-      ? dur.gray + " GRAY" + (dur.bmt ? " (INCL. " + dur.bmt + " BASEMENT)" : "") + (dur.fin ? " + " + dur.fin + (cfg.scope === "shell" ? " SHELL & CORE" : " FINISHING") : "")
-        + " · ≈ " + months(dur.total) + " MONTHS" + (fee ? " · PLUS ≈ " + months(dur.pre) + " MONTHS DESIGN & APPROVAL" : "")
-      : "DESIGN AND APPROVAL";
+      ? (state.cDays ? "≈ " + months(state.cDays) + " MONTHS CONSTRUCTION" : "SUGGESTED " + dur.total + " DAYS CONSTRUCTION")
+        + (fee ? (state.dDays ? " · PLUS " + state.dDays + " DAYS DESIGN & APPROVAL" : " · DESIGN & APPROVAL DAYS NEEDED") : "")
+      : (state.dDays ? "≈ " + months(state.dDays) + " MONTHS DESIGN & APPROVAL" : "SUGGESTED " + dur.pre + " DAYS DESIGN & APPROVAL");
+    document.getElementById("daysHint").textContent = "Suggested: " +
+      (hasG ? dur.total + " days construction (" + dur.gray + " gray" + (dur.bmt ? ", incl. " + dur.bmt + " basement" : "") + (dur.fin ? " + " + dur.fin + (cfg.scope === "shell" ? " shell & core" : " finishing") : "") + ")" : "") +
+      (hasG && fee ? " and " : "") + (fee ? "about " + dur.pre + " days design & approval" : "") +
+      ". The quotation shows the days you enter.";
 
     var parts = [c.gray, c.fin, addT, feeT];
     ["barG","barF","barA","barD"].forEach(function(id, i){
@@ -2052,7 +2081,7 @@ ol.deliv li{padding:3px 0;break-inside:avoid}
 
   var GRAY_SCOPE = ["Site layout and setting out","Excavation and disposal","Shoring of basement excavation",
     "Dewatering during works — normal conditions","PCC, raft and footings","RCC retaining walls with waterproofing",
-    "RCC frame — columns, beams and slabs","Grade 60 steel, 4,000 psi concrete","Stair core and lift shaft walls",
+    "RCC frame — columns, beams and slabs","Grade 60 steel; concrete 4,000 psi in columns, 3,000 psi elsewhere","Stair core and lift shaft walls",
     "Brick / block masonry","Internal and external cement plaster","Conduits and sleeves in slabs and walls",
     "Roof slab, parapet, mumty and lift machine room","Sump pits and ramp slab where a basement is included"];
   var SHELL_SCOPE = ["Base front facade — ACP, glass or stone mix","Lobby, stairs and lift lobby finishes","Common corridors",
@@ -2147,7 +2176,7 @@ ol.deliv li{padding:3px 0;break-inside:avoid}
       out += '<tr><td class="k" colspan="2" style="background:#EAF1FA;font-family:\'IBM Plex Sans\',sans-serif;font-weight:700;' +
              'font-size:9.2px;letter-spacing:.07em;text-transform:uppercase">' + esc(cat) + '</td></tr>';
       BRANDS[cat].forEach(function(r){
-        out += '<tr><td class="k">' + esc(r.t) + '</td><td>' + r.v.map(function(v){ return esc(v.split("|")[0]); }).join(", ") + ', or equivalent</td></tr>';
+        out += '<tr><td class="k">' + esc(r.t) + '</td><td>' + r.v.map(function(v){ return esc(v.split("|")[0]); }).join(r.spec ? "; " : ", ") + (r.spec ? '' : ', or equivalent') + '</td></tr>';
       });
     });
     return out;
@@ -2193,8 +2222,8 @@ ol.deliv li{padding:3px 0;break-inside:avoid}
       '<tr><td ' + k + '>Total covered area</td><td><b>' + sft(a.total) + '</b></td>' +
           '<td ' + k + '>Blended construction rate</td><td>' + (c.build && a.total ? 'Rs ' + fmt(c.build / a.total) + ' / SFT' : '—') + ' &nbsp;<span class="qd">(' + esc(rateNote) + ')</span></td></tr>' +
       '<tr><td ' + k + '>Completion period</td><td colspan="3">' + (hasG
-          ? '<b>' + dur.total + ' days</b> from mobilisation (&asymp; ' + months(dur.total) + ' months)' + (fee ? ', after about ' + months(dur.pre) + ' months of design and approval' : '')
-          : '<b>About ' + months(dur.pre) + ' months</b> for design and approval') + '</td></tr>' +
+          ? '<b>' + state.cDays + ' days</b> from mobilisation (&asymp; ' + months(state.cDays) + ' months)' + (fee ? ', after ' + state.dDays + ' days of design and approval' : '')
+          : '<b>' + state.dDays + ' days</b> for design and approval (&asymp; ' + months(state.dDays) + ' months)') + '</td></tr>' +
       '</tbody></table></div>';
 
     // ── covered area schedule
@@ -2247,14 +2276,13 @@ ol.deliv li{padding:3px 0;break-inside:avoid}
     html4 += '<div class="inwords" style="border-top:0"><b>Note</b>Each instalment falls due on completion of the stage against it, verified on site before invoicing. Add-ons are included in the construction instalments.</div></div>';
 
     // ── timeline
-    var t = TL[D.cls];
+    // durations are the days entered in the estimator
     var html5 = head("Project timeline") + '<table class="qt"><thead><tr><th>Stage</th><th class="n">Duration</th><th>Remarks</th></tr></thead><tbody>' +
-      (fee ? '<tr><td>Design and approval</td><td class="n">&asymp; ' + months(dur.pre) + ' months</td><td>Soil report, concept, 3D, submission set and scrutiny — before mobilisation</td></tr>' : '') +
-      (hasG ? '<tr><td>Mobilisation and excavation</td><td class="n">' + t.mob + ' days</td><td>Site setup, excavation permission, shoring</td></tr>' : '') +
-      (hasG && dur.bmt ? '<tr><td>Basement' + (cfg.b > 1 ? 's (' + cfg.b + ')' : '') + '</td><td class="n">' + dur.bmt + ' days</td><td>Raft, retaining walls, waterproofing and slab</td></tr>' : '') +
-      (hasG ? '<tr><td>Superstructure</td><td class="n">' + (dur.gray - t.mob - dur.bmt) + ' days</td><td>Ground' + (cfg.m ? ', mezzanine' : '') + (cfg.u ? ' and ' + cfg.u + ' upper slab' + (cfg.u > 1 ? 's' : '') : '') + ', roof, mumty and machine room</td></tr>' : '') +
-      (dur.fin ? '<tr><td>' + (cfg.scope === "shell" ? 'Shell &amp; core finishing' : 'Finishing') + '</td><td class="n">' + dur.fin + ' days</td><td>Starts on the lower floors while upper slabs are cast; ends with handover</td></tr>' : '') +
-      (hasG ? '<tr class="sub"><td>TOTAL CONSTRUCTION DURATION</td><td class="n">' + dur.total + ' days</td><td>&asymp; ' + months(dur.total) + ' months from mobilisation</td></tr>' : '') +
+      (fee ? '<tr><td>Design and approval</td><td class="n">' + state.dDays + ' days</td><td>Soil report, concept, 3D, submission set and scrutiny — before mobilisation</td></tr>' : '') +
+      (hasG ? '<tr><td>Construction</td><td class="n">' + state.cDays + ' days</td><td>Mobilisation' + (cfg.b ? ', basement' + (cfg.b > 1 ? 's' : '') : '') + ', superstructure' +
+        (dur.fin ? ', ' + (cfg.scope === "shell" ? 'shell &amp; core finishing' : 'finishing') : '') + ' and handover</td></tr>' : '') +
+      '<tr class="sub"><td>TOTAL PROJECT DURATION</td><td class="n">' + ((hasG ? state.cDays : 0) + (fee ? state.dDays : 0)) + ' days</td><td>&asymp; ' +
+        months((hasG ? state.cDays : 0) + (fee ? state.dDays : 0)) + ' months' + (fee && hasG ? ', design and approval followed by construction' : '') + '</td></tr>' +
       '</tbody></table>' +
       '<div class="inwords" style="border-top:0"><b>Note</b>Durations are in calendar days and assume timely payments, timely approval of drawings and material selections, and normal weather. RCC piling adds 20–30 days per basement.</div></div>';
 
@@ -2321,6 +2349,17 @@ ol.deliv li{padding:3px 0;break-inside:avoid}
   }
 
   document.getElementById("qGen").addEventListener("click", function(){
+    // completion times are always entered by hand: construction when there is construction, design & approval when design is included
+    var need = [];
+    if(state.scope !== "none" && !state.cDays) need.push("cDays");
+    if(state.design && !state.dDays) need.push("dDays");
+    if(need.length){
+      need.forEach(function(id){ document.getElementById(id).style.borderColor = "#B3261E"; });
+      var first = document.getElementById(need[0]);
+      first.scrollIntoView({block:"center"});
+      first.focus();
+      return;
+    }
     buildQuote();
     showQuote(true);
   });

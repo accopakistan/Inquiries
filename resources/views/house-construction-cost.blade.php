@@ -627,6 +627,12 @@ table.qt tr.sub td{background:#F4F8FC;font-weight:600;color:var(--navy)}
         </div>
 
         <div class="field">
+          <label class="ctrl-label" for="days">Completion time (days)</label>
+          <input type="number" id="days" min="1" step="1" inputmode="numeric" placeholder="Enter days">
+          <div class="hint" id="daysHint"></div>
+        </div>
+
+        <div class="field">
           <span class="ctrl-label">Quotation details <span style="text-transform:none;letter-spacing:0;color:#8B9AAE">(optional)</span></span>
           <div class="lookup">
             <input type="number" id="qInq" min="1" step="1" inputmode="numeric" placeholder="Client ID — inquiry number" aria-label="Client ID — inquiry number">
@@ -1184,7 +1190,8 @@ table.qt tr.sub td{background:#F4F8FC;font-weight:600;color:var(--navy)}
       {t:"Bricks", v:["Engineering Bricks","A-Class Kiln Bricks"]},
       {t:"Sand", v:["Chenab Sand","Lawrencepur Sand","Ravi Sand"]},
       {t:"Crush", v:["Margalla Crush","Sargodha Crush"]},
-      {t:"Concrete", v:["Ready Mix Concrete (RMC)","Site Mix Design"]},
+      // spec: a specification, not a brand list — joined with "; " in the quotation
+      {t:"Concrete strength", spec:true, v:["Columns — 4,000 psi","Raft, retaining walls, all slabs, lift well, shared walls, roof beams and stairs — 3,000 psi","Strength achieved at 28 days"]},
       {t:"Waterproofing", v:["Sika","Fosroc","Ultra Chemicals"]}
     ],
     "Electrical": [
@@ -1288,7 +1295,7 @@ table.qt tr.sub td{background:#F4F8FC;font-weight:600;color:var(--navy)}
   var state = { plot: PLOTS[4], scope: "turnkey", area: PLOTS[4].area, custom:false, bmt:false, bmtArea: PLOTS[4].area/2,
                 customRates:false, rates:{g:GRAY, f:FIN, bg:BMT_GRAY, bf:BMT_FIN},
                 ext:false, extSel:EXT_ITEMS.map(function(){ return true; }),
-                pl:false, plAmt:0 };
+                pl:false, plAmt:0, days:0 };   // days: completion time entered for the quotation (0 = not entered yet)
 
   // plinth beam — optional gray structure item, priced as a lump sum; never part of a finishing-only contract
   function plOn(){ return state.pl && state.scope !== "finish"; }
@@ -1413,6 +1420,14 @@ table.qt tr.sub td{background:#F4F8FC;font-weight:600;color:var(--navy)}
     render();
   });
 
+  var daysIn = document.getElementById("days");
+  daysIn.addEventListener("input", function(){
+    var v = parseInt(daysIn.value, 10);
+    state.days = v > 0 ? v : 0;
+    daysIn.style.borderColor = "";
+    render();
+  });
+
   var seg = document.getElementById("scopeSeg");
   Array.prototype.forEach.call(seg.querySelectorAll("button"), function(b){
     b.addEventListener("click", function(){
@@ -1509,14 +1524,17 @@ table.qt tr.sub td{background:#F4F8FC;font-weight:600;color:var(--navy)}
     document.getElementById("barG").style.width = gp + "%";
     document.getElementById("barF").style.width = (100-gp) + "%";
 
+    // completion time is entered by hand; the programme estimate is only shown as a suggestion
     var dur = durationOf();
-    document.getElementById("oDur").textContent = dur.total + " days";
-    document.getElementById("oDurBreak").textContent =
-      (state.scope === "gray"   ? dur.gray + " GRAY"
-     : state.scope === "finish" ? dur.fin + " FINISHING"
-     : dur.gray + " GRAY + " + dur.fin + " FINISHING")
-     + (dur.bmt ? " + " + dur.bmt + " BASEMENT" : "")
-     + "  ·  ≈ " + months(dur.total) + " MONTHS";
+    var sugg = (state.scope === "gray"   ? dur.gray + " gray"
+              : state.scope === "finish" ? dur.fin + " finishing"
+              : dur.gray + " gray + " + dur.fin + " finishing")
+              + (dur.bmt ? " + " + dur.bmt + " basement" : "");
+    document.getElementById("oDur").textContent = state.days ? state.days + " days" : "Enter days";
+    document.getElementById("oDurBreak").textContent = state.days
+      ? "≈ " + months(state.days) + " MONTHS FROM MOBILISATION"
+      : "SUGGESTED " + dur.total + " DAYS";
+    document.getElementById("daysHint").textContent = "Suggested for this plot and scope: " + dur.total + " days (" + sugg + "). The quotation shows the days you enter.";
 
     renderPayments(total);
 
@@ -1760,7 +1778,7 @@ table.qt tr.sub td{background:#F4F8FC;font-weight:600;color:var(--navy)}
       out += '<tr><td class="k" colspan="2" style="background:#EAF1FA;font-family:\'IBM Plex Sans\',sans-serif;font-weight:700;' +
              'font-size:9.2px;letter-spacing:.07em;text-transform:uppercase">' + esc(cat) + '</td></tr>';
       BRANDS[cat].forEach(function(r){
-        var vals = r.v.map(function(v){ return esc(v.split("|")[0]); }).join(", ");
+        var vals = r.v.map(function(v){ return esc(v.split("|")[0]); }).join(r.spec ? "; " : ", ");
         out += '<tr><td class="k">' + esc(r.t) + '</td><td>' + vals + '</td></tr>';
       });
     });
@@ -1789,7 +1807,7 @@ table.qt tr.sub td{background:#F4F8FC;font-weight:600;color:var(--navy)}
                   : state.scope === "finish" ? "Finishing Works"
                   : "Turnkey House Construction";
 
-    var dur = durationOf();
+    var days = state.days;   // entered completion time
 
     var client = document.getElementById("qClient").value.trim() || "—";
     var site   = document.getElementById("qSite").value.trim() || state.plot.label + " residential plot";
@@ -1917,9 +1935,7 @@ table.qt tr.sub td{background:#F4F8FC;font-weight:600;color:var(--navy)}
             '<td class="k" style="background:#F4F8FC;font-weight:600;color:#003478">Scope of contract</td><td><b>'+esc(scopeName)+'</b></td></tr>'+
         '<tr><td class="k" style="background:#F4F8FC;font-weight:600;color:#003478">Total billed area</td><td>'+Math.round(qtyTotal).toLocaleString("en-US")+' SFT</td>'+
             '<td class="k" style="background:#F4F8FC;font-weight:600;color:#003478">Blended rate</td><td>Rs '+blended.toLocaleString("en-US")+' / SFT</td></tr>'+
-        '<tr><td class="k" style="background:#F4F8FC;font-weight:600;color:#003478">Completion period</td><td colspan="3"><b>'+dur.total+' days</b> from mobilisation &mdash; '+
-            (showG ? dur.gray+' days gray structure' : '')+(showG&&showF ? ' + ' : '')+(showF ? dur.fin+' days finishing' : '')+
-            (dur.bmt ? ' + '+dur.bmt+' days basement' : '')+' &nbsp;(&asymp; '+months(dur.total)+' months)</td></tr>'+
+        '<tr><td class="k" style="background:#F4F8FC;font-weight:600;color:#003478">Completion period</td><td colspan="3"><b>'+days+' days</b> from mobilisation &nbsp;(&asymp; '+months(days)+' months)</td></tr>'+
       '</tbody></table></div>'+
 
     '<div class="qsection"><h2><i>02</i> Cost summary</h2>'+
@@ -1940,10 +1956,8 @@ table.qt tr.sub td{background:#F4F8FC;font-weight:600;color:var(--navy)}
 
     '<div class="qsection"><h2><i>04</i> Project Timeline</h2>'+
       '<table class="qt"><thead><tr><th>Stage</th><th class="n">Duration</th><th>Remarks</th></tr></thead><tbody>'+
-      (showG ? '<tr><td>Gray structure</td><td class="n">'+dur.gray+' days</td><td>Mobilisation to plastered, roofed, watertight structure</td></tr>' : '')+
-      (showF ? '<tr><td>Standard finishing</td><td class="n">'+dur.fin+' days</td><td>Finishing trades to move-in condition and handover</td></tr>' : '')+
-      (dur.bmt ? '<tr><td>Basement</td><td class="n">'+dur.bmt+' days</td><td>Added to the substructure programme</td></tr>' : '')+
-      '<tr class="sub"><td>TOTAL PROJECT DURATION</td><td class="n">'+dur.total+' days</td><td>&asymp; '+months(dur.total)+' months from mobilisation</td></tr>'+
+      '<tr class="sub"><td>TOTAL PROJECT DURATION</td><td class="n">'+days+' days</td><td>&asymp; '+months(days)+' months from mobilisation to handover &mdash; '+
+        esc([showG ? 'gray structure' : '', showF ? 'finishing' : '', state.bmt ? 'basement' : ''].filter(Boolean).join(', '))+'</td></tr>'+
       '</tbody></table>'+
       '<div class="inwords" style="border-top:0"><b>Note</b>Durations are in calendar days and assume timely payments, timely approval of drawings and material selections, and normal weather. Finishing trades overlap the structural programme from the ground floor slab onward.</div></div>'+
 
@@ -1987,6 +2001,13 @@ table.qt tr.sub td{background:#F4F8FC;font-weight:600;color:var(--navy)}
       plAmtIn.scrollIntoView({block:"center"});
       plAmtIn.focus();
       document.getElementById("plHint").textContent = "Enter the plinth beam amount, or untick it, before creating the quotation.";
+      return;
+    }
+    // the completion time is always entered by hand
+    if(!state.days){
+      daysIn.style.borderColor = "#B3261E";
+      daysIn.scrollIntoView({block:"center"});
+      daysIn.focus();
       return;
     }
     buildQuote();
