@@ -1513,7 +1513,7 @@ table.qt tr.sub td{background:#F4F8FC;font-weight:600;color:var(--navy)}
     var qty = (showG||showF) ? (a + (state.bmt ? ba : 0)) : 0;
     var blended = qty ? total/qty : 0;
     document.getElementById("oAlt").textContent = total
-      ? (words(total) + "   ·   Rs " + Math.round(blended).toLocaleString("en-US") + " / SFT blended")
+      ? (words(total) + "   ·   Rs " + Math.round(blended).toLocaleString("en-US") + " / SFT average")
       : "";
 
     document.getElementById("totalLabel").textContent =
@@ -1934,7 +1934,7 @@ table.qt tr.sub td{background:#F4F8FC;font-weight:600;color:var(--navy)}
         '<tr><td class="k" style="background:#F4F8FC;font-weight:600;color:#003478">Basement area</td><td>'+(state.bmt ? '<b>'+Math.round(ba).toLocaleString("en-US")+' SFT</b>' : 'Not applicable')+'</td>'+
             '<td class="k" style="background:#F4F8FC;font-weight:600;color:#003478">Scope of contract</td><td><b>'+esc(scopeName)+'</b></td></tr>'+
         '<tr><td class="k" style="background:#F4F8FC;font-weight:600;color:#003478">Total billed area</td><td>'+Math.round(qtyTotal).toLocaleString("en-US")+' SFT</td>'+
-            '<td class="k" style="background:#F4F8FC;font-weight:600;color:#003478">Blended rate</td><td>Rs '+blended.toLocaleString("en-US")+' / SFT</td></tr>'+
+            '<td class="k" style="background:#F4F8FC;font-weight:600;color:#003478">Average cost per SFT</td><td>Rs '+blended.toLocaleString("en-US")+' / SFT</td></tr>'+
         '<tr><td class="k" style="background:#F4F8FC;font-weight:600;color:#003478">Completion period</td><td colspan="3"><b>'+days+' days</b> from mobilisation &nbsp;(&asymp; '+months(days)+' months)</td></tr>'+
       '</tbody></table></div>'+
 
@@ -1943,6 +1943,9 @@ table.qt tr.sub td{background:#F4F8FC;font-weight:600;color:var(--navy)}
       '<th class="n">Rate (Rs/SFT)</th><th class="n">Amount (Rs)</th></tr></thead>'+
       '<tbody>'+rows+
       '<tr class="grand"><td colspan="4">TOTAL CONTRACT VALUE</td><td class="n">'+rs(total)+'</td></tr>'+
+      // average = total contract value ÷ billed area (covered area + basement)
+      (qtyTotal ? '<tr class="sub"><td colspan="4">AVERAGE COST PER SFT <span style="color:#5A6B82;font-size:9.6px;font-weight:400">&nbsp;'+rs(total)+' &divide; '+
+        Math.round(qtyTotal).toLocaleString("en-US")+' SFT'+(state.bmt ? ' covered area incl. basement' : ' covered area')+'</span></td><td class="n">Rs '+blended.toLocaleString("en-US")+' / SFT</td></tr>' : '')+
       '</tbody></table>'+
       '<div class="inwords"><b>In words</b>'+inWords(total)+'</div></div>'+
 

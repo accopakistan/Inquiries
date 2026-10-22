@@ -1796,7 +1796,7 @@ ol.deliv li{padding:3px 0;break-inside:avoid}
       : (cfg.scope === "gray" ? "Gray structure" : cfg.scope === "shell" ? "Shell & core" : "Turnkey") + (fee ? " + design" : "") + " — total";
     document.getElementById("oTotal").textContent = rs(total);
     document.getElementById("oAlt").textContent = total
-      ? words(total) + (c.build && a.total ? "   ·   Rs " + fmt(c.build / a.total) + " / SFT blended construction" : "")
+      ? words(total) + (a.total ? "   ·   Rs " + fmt(total / a.total) + " / SFT average" : "")
       : "";
 
     updateAddons(cfg, c);
@@ -2220,7 +2220,7 @@ ol.deliv li{padding:3px 0;break-inside:avoid}
           'Basement ' + num(cv.bmt) + '%, ground ' + num(cv.g) + '%, mezzanine ' + num(cv.mz) + '%' + (cv.ver ? ' (excl. ' + num(cv.ver) + ' ft verandah)' : '') +
           ', upper floors ' + num(cv.u) + '% of plot, as entered for ' + esc(cfg.auth.label) + '</td></tr>' +
       '<tr><td ' + k + '>Total covered area</td><td><b>' + sft(a.total) + '</b></td>' +
-          '<td ' + k + '>Blended construction rate</td><td>' + (c.build && a.total ? 'Rs ' + fmt(c.build / a.total) + ' / SFT' : '—') + ' &nbsp;<span class="qd">(' + esc(rateNote) + ')</span></td></tr>' +
+          '<td ' + k + '>Average cost per SFT</td><td>' + (total && a.total ? 'Rs ' + fmt(total / a.total) + ' / SFT' : '—') + ' &nbsp;<span class="qd">(' + esc(rateNote) + ')</span></td></tr>' +
       '<tr><td ' + k + '>Completion period</td><td colspan="3">' + (hasG
           ? '<b>' + state.cDays + ' days</b> from mobilisation (&asymp; ' + months(state.cDays) + ' months)' + (fee ? ', after ' + state.dDays + ' days of design and approval' : '')
           : '<b>' + state.dDays + ' days</b> for design and approval (&asymp; ' + months(state.dDays) + ' months)') + '</td></tr>' +
@@ -2256,7 +2256,11 @@ ol.deliv li{padding:3px 0;break-inside:avoid}
     }
     var html3 = head("Cost summary") +
       '<table class="qt"><thead><tr><th class="c">SR</th><th>Description</th><th class="n">Quantity</th><th class="n">Rate (Rs)</th><th class="n">Amount (Rs)</th></tr></thead>' +
-      '<tbody>' + rowsH + '<tr class="grand"><td colspan="4">' + (fee && contract ? 'PRELIMINARY PROJECT TOTAL — CONSTRUCTION + DESIGN' : fee ? 'PRELIMINARY DESIGN FEE' : 'PRELIMINARY CONSTRUCTION CONTRACT VALUE') + '</td><td class="n">' + rs(total) + '</td></tr></tbody></table>' +
+      '<tbody>' + rowsH + '<tr class="grand"><td colspan="4">' + (fee && contract ? 'PRELIMINARY PROJECT TOTAL — CONSTRUCTION + DESIGN' : fee ? 'PRELIMINARY DESIGN FEE' : 'PRELIMINARY CONSTRUCTION CONTRACT VALUE') + '</td><td class="n">' + rs(total) + '</td></tr>' +
+      // average = the total above ÷ total covered area
+      (a.total ? '<tr class="sub"><td colspan="4">AVERAGE COST PER SFT <span class="qd" style="font-weight:400">&nbsp;' + rs(total) + ' &divide; ' + qty(a.total) + ' SFT total covered area</span></td>' +
+        '<td class="n">Rs ' + fmt(total / a.total) + ' / SFT</td></tr>' : '') +
+      '</tbody></table>' +
       '<div class="inwords"><b>In words</b>' + inWords(total) + '</div></div>';
 
     // ── payment schedule
