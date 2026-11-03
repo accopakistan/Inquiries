@@ -219,6 +219,19 @@ h3{font-size:19px;font-weight:700;margin-bottom:10px}
 .chkline{display:flex;align-items:center;gap:9px;font-size:14px;color:var(--navy);cursor:pointer;margin:0 0 7px}
 .chkline input{width:17px;height:17px;accent-color:var(--blue-bright);margin:0;flex:none}
 #extItems .chkline{font-size:13.5px;color:#3B4A5E}
+.mini{display:block;font-family:"IBM Plex Mono";font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px 12px}
+.field .grid2 input[type=number]{font-size:16px;padding:10px 12px}
+.linkbtn{background:none;border:0;padding:6px 0;color:var(--blue-bright);font-size:13.5px;cursor:pointer;text-decoration:underline;text-underline-offset:3px;font-family:inherit}
+.txtarea{width:100%;font-family:"IBM Plex Sans";font-size:14.5px;padding:10px 13px;border:1px solid var(--line-strong);border-radius:2px;resize:vertical}
+.xrow{display:grid;grid-template-columns:1fr 140px 34px;gap:8px;margin-bottom:8px}
+.xrow input{width:100%;font-family:"IBM Plex Sans";font-size:14.5px;padding:9px 11px;border:1px solid var(--line-strong);border-radius:2px}
+.field .xrow input[type=number]{font-size:14.5px;padding:9px 11px}
+.xrow button{border:1px solid var(--line-strong);background:#fff;color:#B3261E;font-size:18px;cursor:pointer;border-radius:2px;line-height:1}
+@media(max-width:520px){.xrow{grid-template-columns:1fr 34px}.xrow input[data-k="amt"]{grid-row:2}}
+.dchk{display:flex;gap:10px;align-items:flex-start;padding:7px 0;border-top:1px solid var(--line);cursor:pointer;font-size:14px;color:var(--navy)}
+.dchk input{width:17px;height:17px;margin:2px 0 0;accent-color:var(--blue-bright);flex:none}
+.dchk small{display:block;color:var(--muted);font-size:12px}
 .lookup{display:flex;gap:8px}
 .field .lookup input[type=number]{flex:1;min-width:0;font-family:"IBM Plex Sans";font-size:15px;padding:11px 14px}
 .lookup .btn{padding:10px 16px;white-space:nowrap;cursor:pointer;font-family:inherit}
@@ -571,9 +584,22 @@ table.qt tr.sub td{background:#F4F8FC;font-weight:600;color:var(--navy)}
         <div class="field">
           <span class="ctrl-label">Scope of work</span>
           <div class="seg" role="group" aria-label="Scope of work" id="scopeSeg">
+            <button type="button" data-scope="design">Design only</button>
             <button type="button" data-scope="gray">Gray structure</button>
             <button type="button" data-scope="finish">Finishing only</button>
             <button type="button" data-scope="turnkey" aria-pressed="true">Turnkey</button>
+          </div>
+        </div>
+
+        <div class="field">
+          <span class="ctrl-label">Design services — architecture, structure, MEP</span>
+          <label class="chkline" id="designLine"><input type="checkbox" id="designOn"> <span id="designLbl">Include design in this quotation</span></label>
+          <div id="designWrap" hidden style="margin-top:12px">
+            <label class="ctrl-label" for="dRate">Design rate (Rs per SFT of covered area)</label>
+            <input type="number" id="dRate" min="0" step="any" inputmode="decimal" placeholder="Enter rate">
+            <div class="hint" id="dRateHint"></div>
+            <span class="ctrl-label" style="margin-top:16px">Drawings to be provided</span>
+            <div id="dDrw"></div>
           </div>
         </div>
 
@@ -607,7 +633,7 @@ table.qt tr.sub td{background:#F4F8FC;font-weight:600;color:var(--navy)}
           </div>
         </div>
 
-        <div class="field">
+        <div class="field" id="extField">
           <span class="ctrl-label">External works</span>
           <label class="chkline"><input type="checkbox" id="extOn"> Add external works to the scope of work</label>
           <div id="extWrap" hidden style="margin-top:12px">
@@ -627,8 +653,18 @@ table.qt tr.sub td{background:#F4F8FC;font-weight:600;color:var(--navy)}
         </div>
 
         <div class="field">
-          <label class="ctrl-label" for="days">Completion time (days)</label>
-          <input type="number" id="days" min="1" step="1" inputmode="numeric" placeholder="Enter days">
+          <span class="ctrl-label">Extra items</span>
+          <div id="xItems"></div>
+          <button type="button" class="linkbtn" id="xAdd">+ Add item</button>
+          <div class="hint">Anything not covered above, with its amount. Each item is a separate line in the cost summary and is included in the total and the payment schedule.</div>
+        </div>
+
+        <div class="field">
+          <span class="ctrl-label">Completion time</span>
+          <div class="grid2">
+            <div id="cDaysBox"><label class="mini" for="days">Construction (days)</label><input type="number" id="days" min="1" step="1" inputmode="numeric" placeholder="Enter days"></div>
+            <div id="dDaysBox" hidden><label class="mini" for="dDays">Design (days)</label><input type="number" id="dDays" min="1" step="1" inputmode="numeric" placeholder="Enter days"></div>
+          </div>
           <div class="hint" id="daysHint"></div>
         </div>
 
@@ -641,6 +677,12 @@ table.qt tr.sub td{background:#F4F8FC;font-weight:600;color:var(--navy)}
           <div class="lookstat" id="qInqStat" role="status"></div>
           <input type="text" id="qClient" placeholder="Client name" style="width:100%;font-family:'IBM Plex Sans';font-size:15px;padding:11px 14px;border:1px solid var(--line-strong);border-radius:2px;margin-bottom:8px">
           <input type="text" id="qSite" placeholder="Plot no. / society / city" style="width:100%;font-family:'IBM Plex Sans';font-size:15px;padding:11px 14px;border:1px solid var(--line-strong);border-radius:2px">
+        </div>
+
+        <div class="field">
+          <label class="ctrl-label" for="xTerms">Additional terms and conditions <span style="text-transform:none;letter-spacing:0;color:#8B9AAE">(optional)</span></label>
+          <textarea id="xTerms" rows="4" placeholder="One term per line" class="txtarea"></textarea>
+          <div class="hint">Each line is added to the quotation's terms and conditions.</div>
         </div>
 
         <div class="plotdraw">
@@ -665,6 +707,14 @@ table.qt tr.sub td{background:#F4F8FC;font-weight:600;color:var(--navy)}
         <div class="out-row" id="rowBmtF" hidden>
           <div class="k">Basement — finishing<em id="lBmtF">@ RS 2,800 / SFT</em></div>
           <div class="v" id="oBmtF">—</div>
+        </div>
+        <div class="out-row" id="rowDes" hidden>
+          <div class="k">Design services<em id="lDes">—</em></div>
+          <div class="v" id="oDes">—</div>
+        </div>
+        <div class="out-row" id="rowX" hidden>
+          <div class="k">Extra items<em id="lX">—</em></div>
+          <div class="v" id="oX">—</div>
         </div>
         <div class="out-row" id="rowPl" hidden>
           <div class="k">Plinth beam<em>LUMP SUM · GRAY STRUCTURE</em></div>
@@ -1178,9 +1228,9 @@ table.qt tr.sub td{background:#F4F8FC;font-weight:600;color:var(--navy)}
     scale = 1 + (scale-1)*0.6;                       // damped for custom areas
     var g = Math.round(p.gd*scale/5)*5;
     var f = Math.round(p.fd*scale/5)*5;
-    var showG = (state.scope !== "finish"), showF = (state.scope !== "gray");
-    var days = (showG?g:0) + (showF?f:0) + (state.bmt ? BMT_DAYS : 0);
-    return {gray:g, fin:f, bmt:(state.bmt?BMT_DAYS:0), total:days};
+    var showG = hasG(), showF = hasF(), bmt = (state.bmt && hasBuild()) ? BMT_DAYS : 0;
+    var days = (showG?g:0) + (showF?f:0) + bmt;
+    return {gray:g, fin:f, bmt:bmt, total:days};
   }
 
   var BRANDS = {
@@ -1295,14 +1345,52 @@ table.qt tr.sub td{background:#F4F8FC;font-weight:600;color:var(--navy)}
   var state = { plot: PLOTS[4], scope: "turnkey", area: PLOTS[4].area, custom:false, bmt:false, bmtArea: PLOTS[4].area/2,
                 customRates:false, rates:{g:GRAY, f:FIN, bg:BMT_GRAY, bf:BMT_FIN},
                 ext:false, extSel:EXT_ITEMS.map(function(){ return true; }),
-                pl:false, plAmt:0, days:0 };   // days: completion time entered for the quotation (0 = not entered yet)
+                pl:false, plAmt:0, days:0,     // days: construction completion time entered for the quotation (0 = not entered yet)
+                design:false, dRate:0, dDays:0, dDrw:{}, extras:[] };
+
+  // scope: "design" (design only), "gray", "finish" or "turnkey"; design can also be added to any construction scope
+  function hasG(){ return state.scope === "gray" || state.scope === "turnkey"; }
+  function hasF(){ return state.scope === "finish" || state.scope === "turnkey"; }
+  function hasBuild(){ return state.scope !== "design"; }
+  function designOn(){ return state.scope === "design" || state.design; }
+  // design fee = covered area incl. basement × the design rate entered (no default rate)
+  function designArea(){ return (state.area || 0) + (state.bmt ? (state.bmtArea || 0) : 0); }
+  function designFee(){ return designOn() ? Math.round(designArea() * state.dRate) : 0; }
+  // extra items: description + lump-sum amount, each a separate cost line
+  function extrasList(){ return state.extras.filter(function(x){ return x.d.trim() || x.amt; }); }
+  function extrasTotal(){ return extrasList().reduce(function(t, x){ return t + x.amt; }, 0); }
+
+  // drawings for house design — the first six are the standard package
+  var DESIGN_DRW = [
+    {id:"3d",   on:true,  t:"3D elevation views", d:"Realistic 3D renderings of the front elevation."},
+    {id:"arch", on:true,  t:"Architectural drawings", d:"Floor plans, sections and elevations with door and window schedules."},
+    {id:"furn", on:true,  t:"Furniture layout plans", d:"Furniture placement for every room."},
+    {id:"str",  on:true,  t:"Structural drawings with stability certificate", d:"Foundation, columns, beams and slabs with reinforcement details."},
+    {id:"elec", on:true,  t:"Electrical drawings", d:"Power, lighting and DB layouts."},
+    {id:"ph",   on:true,  t:"Plumbing and drainage drawings", d:"Water supply, sanitary and sewerage layouts."},
+    {id:"sub",  on:false, t:"Submission drawings for approval", d:"Drawings in the society or authority's format, with follow-up of observations."},
+    {id:"int",  on:false, t:"Interior design drawings", d:"Ceilings, flooring, wall finishes and joinery details."},
+    {id:"land", on:false, t:"Landscape and external works layout", d:"Lawn, driveway, boundary wall and gate layout."}
+  ];
+  DESIGN_DRW.forEach(function(x){ state.dDrw[x.id] = x.on; });
+  function drawings(){ return DESIGN_DRW.filter(function(x){ return state.dDrw[x.id]; }); }
+
+  // design fee payment stages (as on the commercial plaza quotation)
+  var DESIGN_PAYMENTS = [
+    ["Advance — on signing", 20],
+    ["Concept plans approved by client", 15],
+    ["3D elevation approved", 15],
+    ["Submission drawings delivered", 20],
+    ["Structural, electrical and plumbing drawings delivered", 20],
+    ["Approval received — complete set handed over", 10]
+  ];
 
   // plinth beam — optional gray structure item, priced as a lump sum; never part of a finishing-only contract
-  function plOn(){ return state.pl && state.scope !== "finish"; }
+  function plOn(){ return state.pl && hasG(); }
   function plCost(){ return plOn() ? state.plAmt : 0; }
 
   // ticked external works — listed in the scope of work, within the quoted rates (no cost line)
-  function extList(){ return state.ext ? EXT_ITEMS.filter(function(x, i){ return state.extSel[i]; }) : []; }
+  function extList(){ return (state.ext && hasBuild()) ? EXT_ITEMS.filter(function(x, i){ return state.extSel[i]; }) : []; }
 
   // active rates — manual entries when "Enter rates manually" is selected, otherwise the standard 2026 rates
   function rates(){
@@ -1313,8 +1401,8 @@ table.qt tr.sub td{background:#F4F8FC;font-weight:600;color:var(--navy)}
   function getActiveScopes(){
     var a = state.area || 0;
     var ba = state.bmt ? (state.bmtArea || 0) : 0;
-    var showG = (state.scope !== "finish");
-    var showF = (state.scope !== "gray");
+    var showG = hasG();
+    var showF = hasF();
     var r = rates();
 
     if (state.customRates) {
@@ -1326,8 +1414,8 @@ table.qt tr.sub td{background:#F4F8FC;font-weight:600;color:var(--navy)}
     var hasFin  = showF && (a > 0 || (state.bmt && ba > 0));
 
     if (!hasGray && !hasFin) {
-      hasGray = (state.scope !== "finish");
-      hasFin  = (state.scope !== "gray");
+      hasGray = hasG();
+      hasFin  = hasF();
     }
 
     return { gray: hasGray, finish: hasFin };
@@ -1420,11 +1508,62 @@ table.qt tr.sub td{background:#F4F8FC;font-weight:600;color:var(--navy)}
     render();
   });
 
-  var daysIn = document.getElementById("days");
-  daysIn.addEventListener("input", function(){
-    var v = parseInt(daysIn.value, 10);
-    state.days = v > 0 ? v : 0;
-    daysIn.style.borderColor = "";
+  var daysIn = document.getElementById("days"), dDaysIn = document.getElementById("dDays");
+  [[daysIn, "days"], [dDaysIn, "dDays"]].forEach(function(f){
+    f[0].addEventListener("input", function(){
+      var v = parseInt(f[0].value, 10);
+      state[f[1]] = v > 0 ? v : 0;
+      f[0].style.borderColor = "";
+      render();
+    });
+  });
+
+  // design services
+  var designChk = document.getElementById("designOn"), dRateIn = document.getElementById("dRate"), dDrwBox = document.getElementById("dDrw");
+  designChk.addEventListener("change", function(){ state.design = designChk.checked; render(); });
+  dRateIn.addEventListener("input", function(){
+    var v = parseFloat(dRateIn.value);
+    state.dRate = (isFinite(v) && v > 0) ? v : 0;
+    dRateIn.style.borderColor = "";
+    render();
+  });
+  dDrwBox.innerHTML = DESIGN_DRW.map(function(x){
+    return '<label class="dchk"><input type="checkbox" data-id="' + x.id + '"' + (x.on ? ' checked' : '') + '><span>' + x.t + '<small>' + x.d + '</small></span></label>';
+  }).join("");
+  dDrwBox.addEventListener("change", function(e){
+    var id = e.target.getAttribute("data-id");
+    if(id){ state.dDrw[id] = e.target.checked; render(); }
+  });
+
+  // extra items — rows are rebuilt only when added or removed, so typing never loses focus
+  var xBox = document.getElementById("xItems");
+  function drawExtras(){
+    xBox.innerHTML = state.extras.map(function(x, i){
+      return '<div class="xrow" data-i="' + i + '">' +
+        '<input type="text" data-k="d" placeholder="Description" aria-label="Extra item description" value="' + esc(x.d) + '">' +
+        '<input type="number" data-k="amt" min="0" step="1000" inputmode="numeric" placeholder="Amount (Rs)" aria-label="Extra item amount" value="' + (x.amt || "") + '">' +
+        '<button type="button" data-del="1" aria-label="Remove item">&times;</button></div>';
+    }).join("");
+  }
+  document.getElementById("xAdd").addEventListener("click", function(){
+    state.extras.push({d:"", amt:0});
+    drawExtras();
+    xBox.lastElementChild.querySelector("input").focus();
+    render();
+  });
+  xBox.addEventListener("input", function(e){
+    var row = e.target.closest(".xrow"), k = e.target.getAttribute("data-k");
+    if(!row || !k) return;
+    var x = state.extras[+row.getAttribute("data-i")];
+    if(k === "d") x.d = e.target.value;
+    else { var v = parseFloat(e.target.value); x.amt = (isFinite(v) && v > 0) ? v : 0; }
+    e.target.style.borderColor = "";
+    render();
+  });
+  xBox.addEventListener("click", function(e){
+    if(!e.target.getAttribute("data-del")) return;
+    state.extras.splice(+e.target.closest(".xrow").getAttribute("data-i"), 1);
+    drawExtras();
     render();
   });
 
@@ -1470,8 +1609,8 @@ table.qt tr.sub td{background:#F4F8FC;font-weight:600;color:var(--navy)}
   function render(){
     var a = state.area || 0;
     var ba = state.bmt ? (state.bmtArea || 0) : 0;
-    var showG = (state.scope !== "finish");
-    var showF = (state.scope !== "gray");
+    var showG = hasG();
+    var showF = hasF();
 
     var r  = rates();
     var g  = a * r.g,  f  = a * r.f;
@@ -1485,12 +1624,31 @@ table.qt tr.sub td{background:#F4F8FC;font-weight:600;color:var(--navy)}
     var grayPart = (showG ? g : 0) + (showG ? bg : 0) + plCost();
     var finPart  = (showF ? f : 0) + (showF ? bf : 0);
     var ext = extList();
-    var total = grayPart + finPart;
+    var dFee = designFee(), xT = extrasTotal();
+    var total = grayPart + finPart + dFee + xT;
 
-    plChk.disabled = state.scope === "finish";
+    // design services: forced on for a design-only quotation, optional on construction scopes
+    designChk.checked = designOn();
+    designChk.disabled = !hasBuild();
+    document.getElementById("designLbl").textContent = hasBuild() ? "Include design in this quotation" : "Design only quotation";
+    document.getElementById("designWrap").hidden = !designOn();
+    document.getElementById("dRateHint").textContent = !designOn() ? "" : dFee
+      ? sft(designArea()) + " covered area" + (state.bmt ? " incl. basement" : "") + " × Rs " + state.dRate.toLocaleString("en-US") + " = " + rs(dFee) + "."
+      : "Enter your design rate per SFT. Covered area" + (state.bmt ? " incl. basement" : "") + ": " + sft(designArea()) + ".";
+    document.getElementById("rowDes").hidden = !designOn();
+    document.getElementById("oDes").textContent = dFee ? rs(dFee) : "Enter rate";
+    document.getElementById("lDes").textContent = dFee ? sft(designArea()) + " @ RS " + state.dRate.toLocaleString("en-US") : "RATE PER SFT NEEDED";
+    var xl = extrasList();
+    document.getElementById("rowX").hidden = !xl.length;
+    document.getElementById("oX").textContent = rs(xT);
+    document.getElementById("lX").textContent = xl.length + (xl.length > 1 ? " ITEMS" : " ITEM");
+    document.getElementById("extField").hidden = !hasBuild();
+
+    plChk.disabled = !hasG();
     document.getElementById("plWrap").hidden = !plOn();
     document.getElementById("plHint").textContent = state.scope === "finish"
       ? "Plinth beam is gray structure work, so it is not part of a finishing-only contract."
+      : state.scope === "design" ? "Plinth beam is construction work, so it is not part of a design-only quotation."
       : "Not every site needs one. When ticked, the amount is added to the cost summary, the total and the payment schedule as a separate line.";
     document.getElementById("rowPl").hidden = !plOn();
     document.getElementById("oPl").textContent = plCost() ? rs(plCost()) : "Enter amount";
@@ -1510,15 +1668,16 @@ table.qt tr.sub td{background:#F4F8FC;font-weight:600;color:var(--navy)}
     document.getElementById("oArea").textContent = sft(a) + (state.bmt ? "  +  " + sft(ba) + " basement" : "");
     document.getElementById("oTotal").textContent = rs(total);
 
-    var qty = (showG||showF) ? (a + (state.bmt ? ba : 0)) : 0;
+    var qty = a + (state.bmt ? ba : 0);
     var blended = qty ? total/qty : 0;
     document.getElementById("oAlt").textContent = total
       ? (words(total) + "   ·   Rs " + Math.round(blended).toLocaleString("en-US") + " / SFT average")
       : "";
 
     document.getElementById("totalLabel").textContent =
-      state.scope === "gray" ? "Gray structure cost" :
-      state.scope === "finish" ? "Finishing cost" : "Total construction cost";
+      state.scope === "design" ? "Total design fee" :
+      (state.scope === "gray" ? "Gray structure cost" :
+       state.scope === "finish" ? "Finishing cost" : "Total construction cost") + (state.design ? " + design" : "");
 
     var gp = (grayPart + finPart) ? grayPart/(grayPart + finPart)*100 : 50;
     document.getElementById("barG").style.width = gp + "%";
@@ -1530,13 +1689,20 @@ table.qt tr.sub td{background:#F4F8FC;font-weight:600;color:var(--navy)}
               : state.scope === "finish" ? dur.fin + " finishing"
               : dur.gray + " gray + " + dur.fin + " finishing")
               + (dur.bmt ? " + " + dur.bmt + " basement" : "");
-    document.getElementById("oDur").textContent = state.days ? state.days + " days" : "Enter days";
-    document.getElementById("oDurBreak").textContent = state.days
-      ? "≈ " + months(state.days) + " MONTHS FROM MOBILISATION"
-      : "SUGGESTED " + dur.total + " DAYS";
-    document.getElementById("daysHint").textContent = "Suggested for this plot and scope: " + dur.total + " days (" + sugg + "). The quotation shows the days you enter.";
+    document.getElementById("cDaysBox").hidden = !hasBuild();
+    document.getElementById("dDaysBox").hidden = !designOn();
+    var mainDays = hasBuild() ? state.days : state.dDays;
+    document.getElementById("oDur").textContent = mainDays ? mainDays + " days" : "Enter days";
+    document.getElementById("oDurBreak").textContent = !hasBuild()
+      ? (state.dDays ? "≈ " + months(state.dDays) + " MONTHS · DESIGN" : "DESIGN DELIVERY")
+      : (state.days ? "≈ " + months(state.days) + " MONTHS FROM MOBILISATION" : "SUGGESTED " + dur.total + " DAYS")
+        + (state.design ? (state.dDays ? " · PLUS " + state.dDays + " DAYS DESIGN" : " · DESIGN DAYS NEEDED") : "");
+    document.getElementById("daysHint").textContent = hasBuild()
+      ? "Suggested construction time for this plot and scope: " + dur.total + " days (" + sugg + ")." + (state.design ? " Enter the design days too." : "") + " The quotation shows the days you enter."
+      : "Enter the time to deliver the drawings, counted from the advance payment.";
 
-    renderPayments(total);
+    // construction instalments cover construction (and extra items); design is paid by design stages
+    renderPayments(hasBuild() ? grayPart + finPart + xT : dFee + xT);
 
     document.getElementById("areaHint").textContent = state.custom
       ? "Custom covered area. Standard for " + state.plot.label + " is " + sft(state.plot.area) + "."
@@ -1551,8 +1717,9 @@ table.qt tr.sub td{background:#F4F8FC;font-weight:600;color:var(--navy)}
     var tb = document.getElementById("payBody");
     tb.innerHTML = "";
     var running = 0;
-    PAYMENTS.forEach(function(m, i){
-      var amt = (i === PAYMENTS.length - 1)
+    var stages = hasBuild() ? PAYMENTS : DESIGN_PAYMENTS.map(function(s, i){ return {n:i+1, s:s[0], p:s[1]}; });
+    stages.forEach(function(m, i){
+      var amt = (i === stages.length - 1)
         ? Math.round(total) - running                 // last row absorbs rounding
         : Math.round(total * m.p / 100);
       running += amt;
@@ -1567,9 +1734,12 @@ table.qt tr.sub td{background:#F4F8FC;font-weight:600;color:var(--navy)}
 
     var scopeName = state.scope === "gray" ? "gray structure"
                   : state.scope === "finish" ? "finishing"
+                  : state.scope === "design" ? "design-only"
                   : "turnkey";
     document.getElementById("payBasis").textContent =
       "Based on a " + scopeName + " contract for " + sft(state.area || 0) +
+      (state.design && hasBuild() ? " (design fee paid separately by design stages)" : "") +
+      (extrasTotal() ? ", extra items " + rs(extrasTotal()) : "") +
       (state.bmt ? " plus a " + sft(state.bmtArea || 0) + " basement" : "") +
       (plCost() ? ", plinth beam " + rs(plCost()) : "") +
       (extList().length ? ", with external works in scope" : "") +
@@ -1708,10 +1878,11 @@ table.qt tr.sub td{background:#F4F8FC;font-weight:600;color:var(--navy)}
       if(chip){ chip.click(); got.push("plot " + want); }
       else todo.push("plot " + want + " is not a standard size — pick the nearest and set the covered area");
     } else todo.push("plot size");
-    if(h.scope === "gray" || h.scope === "finish" || h.scope === "turnkey"){
+    if(h.scope){
       document.querySelector('#scopeSeg [data-scope="' + h.scope + '"]').click();
-      got.push({gray:"gray structure", finish:"finishing only", turnkey:"turnkey"}[h.scope]);
-    } else if(h.scope === "design") todo.push("client asked for design only — this quotation is for construction");
+      got.push({design:"design only", gray:"gray structure", finish:"finishing only", turnkey:"turnkey"}[h.scope]);
+      if(h.scope === "design") todo.push("design rate", "drawings");
+    }
     if(h.floors && h.floors.b > 0){ document.querySelector('#bmtSeg [data-bmt="1"]').click(); got.push("basement"); }
     if(h.floors && h.floors.u != null) todo.push("description mentions " + h.floors.text + " — adjust the covered area");
     todo.push("covered area", "external works and plinth beam if needed");
@@ -1788,6 +1959,22 @@ table.qt tr.sub td{background:#F4F8FC;font-weight:600;color:var(--navy)}
     return out;
   }
 
+  // design-only quotation: exclusions and terms (construction quotations use EXCLUSIONS and TERMS above)
+  var DESIGN_EXCLUSIONS = [
+    "All construction works — gray structure, finishing, services and external works",
+    "Map approval, NOC and housing society fees, and any challans",
+    "Soil investigation report",
+    "Site supervision during construction",
+    "Drawings and services not listed in this quotation"];
+  var DESIGN_TERMS = [
+    "This quotation excludes any tax.",
+    "Design work will start after the advance payment.",
+    "Drawings are provided in A3 size for approval and construction, along with CAD files.",
+    "The design fee is charged on the covered area stated above. If the covered area increases at the design stage, the fee increases at the same rate per SFT.",
+    "Each design instalment falls due on completion of its stage as per the design payment schedule.",
+    "Changes to an approved concept are charged as additional design work.",
+    "This quotation is valid for 30 days from the date of issue."];
+
   var QREF = "";
   function buildQuote(){
     QREF = refNo();
@@ -1796,74 +1983,84 @@ table.qt tr.sub td{background:#F4F8FC;font-weight:600;color:var(--navy)}
     var scopes = getActiveScopes();
     var showG = scopes.gray;
     var showF = scopes.finish;
+    var build = hasBuild(), dOn = designOn();
 
     var r = rates();
     var g = a*r.g, f = a*r.f, bg = ba*r.bg, bf = ba*r.bf;
     var ext = extList();
     var pl = showG ? plCost() : 0, hasPl = showG && plOn();
-    var total = (showG ? g+bg : 0) + (showF ? f+bf : 0) + pl;
+    var dFee = designFee(), xs = extrasList(), xT = extrasTotal();
+    var construction = (showG ? g+bg : 0) + (showF ? f+bf : 0) + pl;
+    var total = construction + dFee + xT;
+    // construction instalments cover construction + extra items; design stages cover the design fee (+ extra items on a design-only quote)
+    var buildPay = build ? construction + xT : 0, designPay = dOn ? dFee + (build ? 0 : xT) : 0;
 
-    var scopeName = state.scope === "gray" ? "Gray Structure Construction"
+    var buildName = state.scope === "gray" ? "Gray Structure Construction"
                   : state.scope === "finish" ? "Finishing Works"
                   : "Turnkey House Construction";
-
-    var days = state.days;   // entered completion time
+    var scopeName = !build ? "Design Services — Architecture, Structure & MEP" : (state.design ? "Design + " : "") + buildName;
 
     var client = document.getElementById("qClient").value.trim() || "—";
     var site   = document.getElementById("qSite").value.trim() || state.plot.label + " residential plot";
 
+    // sections are numbered as they are added, so optional sections never leave gaps
+    var sec = 0;
+    function head(t){ sec++; return '<div class="qsection"><h2><i>' + (sec < 10 ? "0" : "") + sec + '</i> ' + t + '</h2>'; }
+    var K  = 'class="k" style="background:#F4F8FC;font-weight:600;color:#003478"';
+    var KW = 'class="k" style="background:#F4F8FC;font-weight:600;color:#003478;width:26%"';
+    function qd(t){ return '<br><span style="color:#5A6B82;font-size:9.6px">' + t + '</span>'; }
+    function n0(x){ return Math.round(x).toLocaleString("en-US"); }
+    var H4 = '<h4 style="font-family:\'Archivo\',sans-serif;font-weight:700;font-size:11.4px;color:var(--navy);margin:0 0 6px">';
+
     // ── cost rows
     var rows = "", sr = 0;
-    if(showG){
-      sr++; rows += '<tr><td class="c">'+sr+'</td><td><b>Gray structure</b><br><span style="color:#5A6B82;font-size:9.6px">'+
-        'Complete RCC structural shell — foundation to plastered roofed building</span></td>'+
-        '<td class="n">'+Math.round(a).toLocaleString("en-US")+'</td><td class="n">'+rateTxt(r.g)+'</td><td class="n">'+rs(g)+'</td></tr>';
+    function row(title, desc, qty, rate, amt){
+      sr++; rows += '<tr><td class="c">'+sr+'</td><td><b>'+title+'</b>'+qd(desc)+'</td><td class="n">'+qty+'</td><td class="n">'+rate+'</td><td class="n">'+rs(amt)+'</td></tr>';
     }
-    if(hasPl){
-      sr++; rows += '<tr><td class="c">'+sr+'</td><td><b>Plinth beam</b><br><span style="color:#5A6B82;font-size:9.6px">'+
-        'RCC plinth beam over the foundation, below the ground floor walls</span></td>'+
-        '<td class="n">—</td><td class="n">Lump sum</td><td class="n">'+rs(pl)+'</td></tr>';
-    }
-    if(showF){
-      sr++; rows += '<tr><td class="c">'+sr+'</td><td><b>Standard finishing</b><br><span style="color:#5A6B82;font-size:9.6px">'+
-        'Full finishing package to move-in condition</span></td>'+
-        '<td class="n">'+Math.round(a).toLocaleString("en-US")+'</td><td class="n">'+rateTxt(r.f)+'</td><td class="n">'+rs(f)+'</td></tr>';
-    }
-    if(state.bmt && showG){
-      sr++; rows += '<tr><td class="c">'+sr+'</td><td><b>Basement — gray structure</b><br><span style="color:#5A6B82;font-size:9.6px">'+
-        'Excavation, shoring, raft, retaining walls, waterproofing, slab</span></td>'+
-        '<td class="n">'+Math.round(ba).toLocaleString("en-US")+'</td><td class="n">'+rateTxt(r.bg)+'</td><td class="n">'+rs(bg)+'</td></tr>';
-    }
-    if(state.bmt && showF){
-      sr++; rows += '<tr><td class="c">'+sr+'</td><td><b>Basement — finishing</b><br><span style="color:#5A6B82;font-size:9.6px">'+
-        'Floor finish, paint, doors, lighting, power, drainage, ventilation</span></td>'+
-        '<td class="n">'+Math.round(ba).toLocaleString("en-US")+'</td><td class="n">'+rateTxt(r.bf)+'</td><td class="n">'+rs(bf)+'</td></tr>';
-    }
+    if(showG) row("Gray structure", "Complete RCC structural shell — foundation to plastered roofed building", n0(a), rateTxt(r.g), g);
+    if(hasPl) row("Plinth beam", "RCC plinth beam over the foundation, below the ground floor walls", "—", "Lump sum", pl);
+    if(showF) row("Standard finishing", "Full finishing package to move-in condition", n0(a), rateTxt(r.f), f);
+    if(state.bmt && showG) row("Basement — gray structure", "Excavation, shoring, raft, retaining walls, waterproofing, slab", n0(ba), rateTxt(r.bg), bg);
+    if(state.bmt && showF) row("Basement — finishing", "Floor finish, paint, doors, lighting, power, drainage, ventilation", n0(ba), rateTxt(r.bf), bf);
+    if(dOn) row("Design services — architecture, structure, MEP and 3D", "Drawings as listed in the scope of work", n0(designArea()),
+                state.dRate.toLocaleString("en-US", {maximumFractionDigits:2}), dFee);
+    xs.forEach(function(x){ row(esc(x.d.trim()), "Extra item", "—", "Lump sum", x.amt); });
 
-    // ── payment rows
-    var payRows = "", running = 0;
-    PAYMENTS.forEach(function(m,i){
-      var amt = (i === PAYMENTS.length-1) ? Math.round(total)-running : Math.round(total*m.p/100);
-      running += amt;
-      payRows += '<tr><td class="c">'+m.n+'</td><td>'+esc(m.s)+'</td><td class="n">'+m.p+'%</td><td class="n">'+rs(amt)+'</td></tr>';
-    });
-
-    var qtyTotal = a + (state.bmt ? ba : 0);
+    var qtyTotal = a + ba;
     var blended  = qtyTotal ? Math.round(total/qtyTotal) : 0;
 
-    // exclusions name any external works left out of the scope
+    // ── payment schedules: construction stages, and design stages when design is quoted
+    function payTable(stages, amount, title){
+      var running = 0, out = "";
+      stages.forEach(function(m, i){
+        var amt = (i === stages.length-1) ? Math.round(amount)-running : Math.round(amount*m.p/100);
+        running += amt;
+        out += '<tr><td class="c">'+(i+1)+'</td><td>'+esc(m.s)+'</td><td class="n">'+m.p+'%</td><td class="n">'+rs(amt)+'</td></tr>';
+      });
+      return '<table class="qt" style="margin-bottom:8px"><thead><tr><th class="c">SR</th><th>'+title+'</th><th class="n">%age</th><th class="n">Amount (Rs)</th></tr></thead><tbody>'+out+
+        '<tr class="sub"><td class="c">—</td><td>TOTAL</td><td class="n">100%</td><td class="n">'+rs(amount)+'</td></tr></tbody></table>';
+    }
+    var payHtml = (build ? payTable(PAYMENTS, buildPay, dOn ? "Construction stage" : "Scope of work") : "") +
+                  (dOn ? payTable(DESIGN_PAYMENTS.map(function(s){ return {s:s[0], p:s[1]}; }), designPay, "Design stage") : "");
+    var payNote = build
+      ? "Each instalment falls due on completion of the stage against it, verified on site before invoicing. " +
+        (state.bmt ? "For the basement, the plinth and ground wall stages are read as basement raft, basement walls and basement slab." : "Mobilisation advance is payable on signing of the contract.") +
+        (xT ? " Extra items are included in the construction instalments." : "")
+      : "Each design instalment falls due on completion of its stage." + (xT ? " Extra items are included in the design instalments." : "");
+
+    // ── exclusions and terms; extra terms typed in the estimator are added at the end
     var extMissing = EXT_ITEMS.filter(function(x){ return ext.indexOf(x) === -1; })
       .map(function(x){ return x.split(" — ")[0].toLowerCase(); });
-    var quoteExclusions = EXCLUSIONS.slice(0, -1)
+    var quoteExclusions = !build ? DESIGN_EXCLUSIONS : EXCLUSIONS.slice(0, -1)
       .concat(showG && !hasPl ? ["Plinth beam"] : [])
       .concat(extMissing.length ? ["External works — " + extMissing.join(", ")] : [])
       .concat(EXCLUSIONS.slice(-1));
+    var extraTerms = document.getElementById("xTerms").value.split(/\r?\n/).map(function(t){ return t.trim(); }).filter(Boolean);
+    var quoteTerms = (!build ? DESIGN_TERMS : TERMS.filter(function(t, idx){ return !(!showG && idx === 12); })
+      .concat(dOn ? ["The design fee covers the drawings listed in the scope of work and is paid by the design stages above. Changes to an approved concept are charged as additional design work."] : []))
+      .concat(extraTerms);
 
-    var quoteTerms = TERMS.filter(function(t, idx){
-      if(!showG && idx === 12) return false;
-      return true;
-    });
-
+    // ── scope of work
     var scopeHtml = "";
     if(showG){
       var grayItems = hasPl ? GRAY_SCOPE.slice(0, 3).concat(["Plinth beam"], GRAY_SCOPE.slice(3)) : GRAY_SCOPE;   // after Foundation
@@ -1875,33 +2072,36 @@ table.qt tr.sub td{background:#F4F8FC;font-weight:600;color:var(--navy)}
         FIN_SCOPE.map(function(x){return '<li>'+esc(x)+'</li>';}).join('')+'</ul></div>';
     }
     var qcolsStyle = (showG && showF) ? '' : ' style="grid-template-columns:1fr;"';
-    var extScopeHtml = ext.length
-      ? '<div class="qcols" style="grid-template-columns:1fr;border-top:0"><div><h4>External works</h4><ul class="qlist">'+
-          ext.map(function(x){return '<li>'+esc(x)+'</li>';}).join('')+'</ul></div></div>'
-      : '';
+    var buildScopeHtml = build ? '<div class="qcols"'+qcolsStyle+'>'+scopeHtml+'</div>' +
+      (ext.length ? '<div class="qcols" style="grid-template-columns:1fr;border-top:0"><div><h4>External works</h4><ul class="qlist">'+
+        ext.map(function(x){return '<li>'+esc(x)+'</li>';}).join('')+'</ul></div></div>' : '') : '';
+    var drw = drawings();
+    var designScopeHtml = dOn ? '<div' + (build ? ' style="margin-top:10px"' : '') + '>' + H4 + 'Design — drawings to be provided</h4>' +
+      '<table class="qt"><tbody>' + (drw.length
+        ? drw.map(function(x){ return '<tr><td style="text-align:center;width:34px;color:#0057B8;font-weight:700">&#10003;</td><td><b>'+esc(x.t)+'</b>'+qd(esc(x.d))+'</td></tr>'; }).join('')
+        : '<tr><td>Drawings to be confirmed.</td></tr>') + '</tbody></table></div>' : '';
 
+    // ── material specification (construction only)
     var specHtml = "";
     if(showG){
-      specHtml += '<div style="' + (showF ? 'margin-bottom:14px;' : '') + '">'+
-        '<h4 style="font-family:\'Archivo\',sans-serif;font-weight:700;font-size:11.4px;color:var(--navy);margin:0 0 6px">Gray structure</h4>'+
-        '<table class="spec"><tbody>'+specRows("gray")+'</tbody></table>'+
-      '</div>';
+      specHtml += '<div style="' + (showF ? 'margin-bottom:14px;' : '') + '">'+ H4 + 'Gray structure</h4>'+
+        '<table class="spec"><tbody>'+specRows("gray")+'</tbody></table></div>';
     }
     if(showF){
-      specHtml += '<div>'+
-        '<h4 style="font-family:\'Archivo\',sans-serif;font-weight:700;font-size:11.4px;color:var(--navy);margin:0 0 6px">Standard finishing</h4>'+
-        '<table class="spec"><tbody>'+specRows("finish")+'</tbody></table>'+
-      '</div>';
+      specHtml += '<div>'+ H4 + 'Standard finishing</h4><table class="spec"><tbody>'+specRows("finish")+'</tbody></table></div>';
     }
     if(ext.length){
-      specHtml += '<div style="margin-top:14px">'+
-        '<h4 style="font-family:\'Archivo\',sans-serif;font-weight:700;font-size:11.4px;color:var(--navy);margin:0 0 6px">External works</h4>'+
-        '<table class="spec"><tbody>'+specRows("ext")+'</tbody></table>'+
-      '</div>';
+      specHtml += '<div style="margin-top:14px">'+ H4 + 'External works</h4><table class="spec"><tbody>'+specRows("ext")+'</tbody></table></div>';
     }
-    if(!specHtml){
-      specHtml = '<table class="spec"><tbody><tr><td colspan="2" style="text-align:center;color:#5A6B82;padding:10px">No material specifications applicable for the selected scope.</td></tr></tbody></table>';
-    }
+
+    // ── completion: construction days from mobilisation; design days from the advance payment
+    var completion = build
+      ? '<b>'+state.days+' days</b> from mobilisation &nbsp;(&asymp; '+months(state.days)+' months)' + (dOn ? ', after '+state.dDays+' days of design' : '')
+      : '<b>'+state.dDays+' days</b> from the advance payment &nbsp;(&asymp; '+months(state.dDays)+' months)';
+    var tlTotal = (build ? state.days : 0) + (dOn ? state.dDays : 0);
+    var tlRows = (dOn ? '<tr><td>Design</td><td class="n">'+state.dDays+' days</td><td>'+(build ? 'Drawings for approval and construction, before mobilisation' : 'From the advance payment to delivery of the drawings')+'</td></tr>' : '') +
+      (build ? '<tr><td>Construction</td><td class="n">'+state.days+' days</td><td>From mobilisation to handover &mdash; '+
+        esc([showG ? 'gray structure' : '', showF ? 'finishing' : '', state.bmt ? 'basement' : ''].filter(Boolean).join(', '))+'</td></tr>' : '');
 
     var html =
     '<div class="qhead">'+
@@ -1915,7 +2115,7 @@ table.qt tr.sub td{background:#F4F8FC;font-weight:600;color:var(--navy)}
       '</div><div class="lh-rule"></div>'+
     '</div>'+
 
-    '<div class="qtitle"><div><h1>Quotation — House Construction</h1>'+
+    '<div class="qtitle"><div><h1>Quotation — House '+(build ? 'Construction' : 'Design')+'</h1>'+
       '<div class="sub">'+esc(scopeName)+'</div></div>'+
       '<div class="qmeta"><b>Ref</b> '+QREF+'<br><b>Date</b> '+today()+'<br><b>Valid till</b> '+validTill()+
         (INQ.number() ? '<br><b>Client ID</b> #'+INQ.number() : '')+'</div></div>'+
@@ -1925,58 +2125,49 @@ table.qt tr.sub td{background:#F4F8FC;font-weight:600;color:var(--navy)}
       '<div><div class="lbl">Project site</div><div class="val">'+esc(site)+'</div></div>'+
     '</div>'+
 
-    '<div class="qsection"><h2><i>01</i> Project particulars</h2>'+
+    head("Project particulars")+
       '<table class="qt"><tbody>'+
-        '<tr><td class="k" style="background:#F4F8FC;font-weight:600;color:#003478;width:26%">Plot size</td><td>'+esc(state.plot.label)+'</td>'+
-            '<td class="k" style="background:#F4F8FC;font-weight:600;color:#003478;width:26%">Plot dimensions</td><td>'+state.plot.w+"' &times; "+state.plot.d+"'</td></tr>"+
-        '<tr><td class="k" style="background:#F4F8FC;font-weight:600;color:#003478">Plot area</td><td>'+state.plot.plot.toLocaleString("en-US")+' SFT</td>'+
-            '<td class="k" style="background:#F4F8FC;font-weight:600;color:#003478">Covered area</td><td><b>'+Math.round(a).toLocaleString("en-US")+' SFT</b></td></tr>'+
-        '<tr><td class="k" style="background:#F4F8FC;font-weight:600;color:#003478">Basement area</td><td>'+(state.bmt ? '<b>'+Math.round(ba).toLocaleString("en-US")+' SFT</b>' : 'Not applicable')+'</td>'+
-            '<td class="k" style="background:#F4F8FC;font-weight:600;color:#003478">Scope of contract</td><td><b>'+esc(scopeName)+'</b></td></tr>'+
-        '<tr><td class="k" style="background:#F4F8FC;font-weight:600;color:#003478">Total billed area</td><td>'+Math.round(qtyTotal).toLocaleString("en-US")+' SFT</td>'+
-            '<td class="k" style="background:#F4F8FC;font-weight:600;color:#003478">Average cost per SFT</td><td>Rs '+blended.toLocaleString("en-US")+' / SFT</td></tr>'+
-        '<tr><td class="k" style="background:#F4F8FC;font-weight:600;color:#003478">Completion period</td><td colspan="3"><b>'+days+' days</b> from mobilisation &nbsp;(&asymp; '+months(days)+' months)</td></tr>'+
+        '<tr><td '+KW+'>Plot size</td><td>'+esc(state.plot.label)+'</td>'+
+            '<td '+KW+'>Plot dimensions</td><td>'+state.plot.w+"' &times; "+state.plot.d+"'</td></tr>"+
+        '<tr><td '+K+'>Plot area</td><td>'+state.plot.plot.toLocaleString("en-US")+' SFT</td>'+
+            '<td '+K+'>Covered area</td><td><b>'+n0(a)+' SFT</b></td></tr>'+
+        '<tr><td '+K+'>Basement area</td><td>'+(state.bmt ? '<b>'+n0(ba)+' SFT</b>' : 'Not applicable')+'</td>'+
+            '<td '+K+'>Scope of contract</td><td><b>'+esc(scopeName)+'</b></td></tr>'+
+        '<tr><td '+K+'>'+(build ? 'Total billed area' : 'Design area')+'</td><td>'+n0(qtyTotal)+' SFT</td>'+
+            '<td '+K+'>Average cost per SFT</td><td>Rs '+blended.toLocaleString("en-US")+' / SFT</td></tr>'+
+        '<tr><td '+K+'>Completion period</td><td colspan="3">'+completion+'</td></tr>'+
       '</tbody></table></div>'+
 
-    '<div class="qsection"><h2><i>02</i> Cost summary</h2>'+
+    head("Cost summary")+
       '<table class="qt"><thead><tr><th class="c">SR</th><th>Description</th><th class="n">Area (SFT)</th>'+
       '<th class="n">Rate (Rs/SFT)</th><th class="n">Amount (Rs)</th></tr></thead>'+
       '<tbody>'+rows+
-      '<tr class="grand"><td colspan="4">TOTAL CONTRACT VALUE</td><td class="n">'+rs(total)+'</td></tr>'+
-      // average = total contract value ÷ billed area (covered area + basement)
+      '<tr class="grand"><td colspan="4">'+(build ? 'TOTAL CONTRACT VALUE' : 'TOTAL DESIGN FEE')+'</td><td class="n">'+rs(total)+'</td></tr>'+
+      // average = total ÷ covered area incl. basement
       (qtyTotal ? '<tr class="sub"><td colspan="4">AVERAGE COST PER SFT <span style="color:#5A6B82;font-size:9.6px;font-weight:400">&nbsp;'+rs(total)+' &divide; '+
-        Math.round(qtyTotal).toLocaleString("en-US")+' SFT'+(state.bmt ? ' covered area incl. basement' : ' covered area')+'</span></td><td class="n">Rs '+blended.toLocaleString("en-US")+' / SFT</td></tr>' : '')+
+        n0(qtyTotal)+' SFT'+(state.bmt ? ' covered area incl. basement' : ' covered area')+'</span></td><td class="n">Rs '+blended.toLocaleString("en-US")+' / SFT</td></tr>' : '')+
       '</tbody></table>'+
       '<div class="inwords"><b>In words</b>'+inWords(total)+'</div></div>'+
 
-    '<div class="qsection"><h2><i>03</i> Payment schedule</h2>'+
-      '<table class="qt"><thead><tr><th class="c">SR</th><th>Scope of work</th><th class="n">%age</th><th class="n">Amount (Rs)</th></tr></thead>'+
-      '<tbody>'+payRows+
-      '<tr class="sub"><td class="c">—</td><td>TOTAL</td><td class="n">100%</td><td class="n">'+rs(total)+'</td></tr>'+
+    head("Payment schedule")+ payHtml +
+      '<div class="inwords" style="border-top:1px solid #C9D6E6"><b>Note</b>'+payNote+'</div></div>'+
+
+    head("Project timeline")+
+      '<table class="qt"><thead><tr><th>Stage</th><th class="n">Duration</th><th>Remarks</th></tr></thead><tbody>'+ tlRows +
+      '<tr class="sub"><td>TOTAL PROJECT DURATION</td><td class="n">'+tlTotal+' days</td><td>&asymp; '+months(tlTotal)+' months'+(build && dOn ? ', design followed by construction' : '')+'</td></tr>'+
       '</tbody></table>'+
-      '<div class="inwords" style="border-top:0"><b>Note</b>Each instalment falls due on completion of the stage against it, verified on site before invoicing. '+
-      (state.bmt ? 'For the basement, the plinth and ground wall stages are read as basement raft, basement walls and basement slab.' : 'Mobilisation advance is payable on signing of the contract.')+'</div></div>'+
+      '<div class="inwords" style="border-top:0"><b>Note</b>Durations are in calendar days and assume timely payments, timely approval of drawings'+
+        (build ? ' and material selections, and normal weather. Finishing trades overlap the structural programme from the ground floor slab onward.' : ' by the client.')+'</div></div>'+
 
-    '<div class="qsection"><h2><i>04</i> Project Timeline</h2>'+
-      '<table class="qt"><thead><tr><th>Stage</th><th class="n">Duration</th><th>Remarks</th></tr></thead><tbody>'+
-      '<tr class="sub"><td>TOTAL PROJECT DURATION</td><td class="n">'+days+' days</td><td>&asymp; '+months(days)+' months from mobilisation to handover &mdash; '+
-        esc([showG ? 'gray structure' : '', showF ? 'finishing' : '', state.bmt ? 'basement' : ''].filter(Boolean).join(', '))+'</td></tr>'+
-      '</tbody></table>'+
-      '<div class="inwords" style="border-top:0"><b>Note</b>Durations are in calendar days and assume timely payments, timely approval of drawings and material selections, and normal weather. Finishing trades overlap the structural programme from the ground floor slab onward.</div></div>'+
+    head("Scope of work")+ buildScopeHtml + designScopeHtml +'</div>'+
 
-    '<div class="qsection"><h2><i>05</i> Scope of work</h2>'+
-      '<div class="qcols"'+qcolsStyle+'>'+
-        scopeHtml+
-      '</div>'+extScopeHtml+'</div>'+
+    (build ? head("Material specification")+ specHtml +
+      '<div class="inwords" style="margin-top:6px;border-top:1px solid #C9D6E6"><b>Note</b>Final brand selection within each approved category is made jointly with the client before procurement.</div></div>' : '')+
 
-    '<div class="qsection"><h2><i>06</i> Material specification</h2>'+
-      specHtml+
-      '<div class="inwords" style="margin-top:6px;border-top:1px solid #C9D6E6"><b>Note</b>Final brand selection within each approved category is made jointly with the client before procurement.</div></div>'+
-
-    '<div class="qsection"><h2><i>07</i> Exclusions</h2>'+
+    head("Exclusions")+
       '<ol class="terms">'+quoteExclusions.map(function(x){return '<li>'+esc(x)+'</li>';}).join('')+'</ol></div>'+
 
-    '<div class="qsection"><h2><i>08</i> Terms and conditions</h2>'+
+    head("Terms and conditions")+
       '<ol class="terms">'+quoteTerms.map(function(x){return '<li>'+esc(x)+'</li>';}).join('')+'</ol></div>'+
 
     '<div class="sign">'+
@@ -2006,11 +2197,20 @@ table.qt tr.sub td{background:#F4F8FC;font-weight:600;color:var(--navy)}
       document.getElementById("plHint").textContent = "Enter the plinth beam amount, or untick it, before creating the quotation.";
       return;
     }
-    // the completion time is always entered by hand
-    if(!state.days){
-      daysIn.style.borderColor = "#B3261E";
-      daysIn.scrollIntoView({block:"center"});
-      daysIn.focus();
+    // everything the quotation needs from the user, in form order: the first missing field is focused
+    var missing = [];
+    if(designOn() && !state.dRate) missing.push(dRateIn);
+    xBox.querySelectorAll(".xrow").forEach(function(rowEl, i){
+      var x = state.extras[i];
+      if(x.d.trim() && !x.amt) missing.push(rowEl.querySelector('[data-k="amt"]'));
+      if(x.amt && !x.d.trim()) missing.push(rowEl.querySelector('[data-k="d"]'));
+    });
+    if(hasBuild() && !state.days) missing.push(daysIn);   // completion times are always entered by hand
+    if(designOn() && !state.dDays) missing.push(dDaysIn);
+    if(missing.length){
+      missing.forEach(function(el){ el.style.borderColor = "#B3261E"; });
+      missing[0].scrollIntoView({block:"center"});
+      missing[0].focus();
       return;
     }
     buildQuote();
