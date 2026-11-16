@@ -600,6 +600,16 @@ table.qt tr.sub td{background:#F4F8FC;font-weight:600;color:var(--navy)}
             <div class="hint" id="dRateHint"></div>
             <span class="ctrl-label" style="margin-top:16px">Drawings to be provided</span>
             <div id="dDrw"></div>
+            <span class="ctrl-label" style="margin-top:16px">Design fee payment terms</span>
+            <div class="seg" role="group" aria-label="Design fee payment terms" id="dPaySeg">
+              <button type="button" data-dpay="advance" aria-pressed="true">Complete in advance</button>
+              <button type="button" data-dpay="custom">Instalments by stage</button>
+            </div>
+            <div id="dPayWrap" hidden style="margin-top:12px">
+              <div id="dPayRows"></div>
+              <button type="button" class="linkbtn" id="dPayAdd">+ Add instalment</button>
+              <div class="hint" id="dPayHint"></div>
+            </div>
           </div>
         </div>
 
@@ -1346,7 +1356,8 @@ table.qt tr.sub td{background:#F4F8FC;font-weight:600;color:var(--navy)}
                 customRates:false, rates:{g:GRAY, f:FIN, bg:BMT_GRAY, bf:BMT_FIN},
                 ext:false, extSel:EXT_ITEMS.map(function(){ return true; }),
                 pl:false, plAmt:0, days:0,     // days: construction completion time entered for the quotation (0 = not entered yet)
-                design:false, dRate:0, dDays:0, dDrw:{}, extras:[] };
+                design:false, dRate:0, dDays:0, dDrw:{}, extras:[],
+                dPayMode:"advance", dPay:[] };   // dPay: [{s: stage, p: percent}] when design fee is paid in instalments
 
   // scope: "design" (design only), "gray", "finish" or "turnkey"; design can also be added to any construction scope
   function hasG(){ return state.scope === "gray" || state.scope === "turnkey"; }
@@ -1375,15 +1386,24 @@ table.qt tr.sub td{background:#F4F8FC;font-weight:600;color:var(--navy)}
   DESIGN_DRW.forEach(function(x){ state.dDrw[x.id] = x.on; });
   function drawings(){ return DESIGN_DRW.filter(function(x){ return state.dDrw[x.id]; }); }
 
-  // design fee payment stages (as on the commercial plaza quotation)
-  var DESIGN_PAYMENTS = [
-    ["Advance — on signing", 20],
-    ["Concept plans approved by client", 15],
-    ["3D elevation approved", 15],
-    ["Submission drawings delivered", 20],
-    ["Structural, electrical and plumbing drawings delivered", 20],
-    ["Approval received — complete set handed over", 10]
-  ];
+  // design fee payment terms: "advance" = 100% on signing; "custom" = instalments and stages entered by hand
+  function designPayments(){
+    if(state.dPayMode === "advance") return [{s:"Complete design fee — in advance, on signing", p:100}];
+    return state.dPay.filter(function(x){ return x.s.trim() || x.p; }).map(function(x){ return {s:x.s.trim(), p:x.p}; });
+  }
+  function dPaySum(){ return state.dPay.reduce(function(t, x){ return t + (x.p || 0); }, 0); }
+  function designPayText(){
+    if(state.dPayMode === "advance") return "The complete design fee is payable in advance, on signing.";
+    var n = designPayments().length;
+    return "The design fee is payable in " + n + " instalment" + (n === 1 ? "" : "s") + " as per the design payment schedule; each instalment falls due on completion of its stage.";
+  }
+
+  // DHA site + submission drawings selected → ACCO handles the DHA submission process
+  function dhaSubmission(){
+    var site = (document.getElementById("qSite").value || "");
+    return designOn() && !!state.dDrw.sub && /\bDHA\b|defen[cs]e housing/i.test(site);
+  }
+  var DHA_NOTE = "Ahmed Construction Company will take care of the complete submission process with the DHA authorities, including follow-up of observations until approval.";
 
   // plinth beam — optional gray structure item, priced as a lump sum; never part of a finishing-only contract
   function plOn(){ return state.pl && hasG(); }
@@ -1533,6 +1553,60 @@ table.qt tr.sub td{background:#F4F8FC;font-weight:600;color:var(--navy)}
   dDrwBox.addEventListener("change", function(e){
     var id = e.target.getAttribute("data-id");
     if(id){ state.dDrw[id] = e.target.checked; render(); }
+  });
+
+  // design fee payment terms — complete in advance, or instalments with their stages typed in
+  var dPaySeg = document.getElementById("dPaySeg"), dPayBox = document.getElementById("dPayRows");
+  function drawDPay(){
+    dPayBox.innerHTML = state.dPay.map(function(x, i){
+      return '<div class="xrow" data-i="' + i + '">' +
+        '<input type="text" data-k="s" placeholder="Stage, e.g. On approval of 3D elevation" aria-label="Instalment ' + (i+1) + ' stage" value="' + esc(x.s) + '">' +
+        '<input type="number" data-k="p" min="0" max="100" step="any" inputmode="decimal" placeholder="%" aria-label="Instalment ' + (i+1) + ' percentage" value="' + (x.p || "") + '">' +
+        '<button type="button" data-del="1" aria-label="Remove instalment">&times;</button></div>';
+    }).join("");
+  }
+  function dPayHint(){
+    var s = dPaySum(), ok = Math.abs(s - 100) < 0.001, h = document.getElementById("dPayHint");
+    h.textContent = "Total " + (Math.round(s*100)/100) + "% of 100%." + (ok ? "" : " The instalments must add up to 100%.");
+    h.style.color = (ok || !state.dPay.length) ? "" : "#B3261E";
+  }
+  Array.prototype.forEach.call(dPaySeg.querySelectorAll("button"), function(b){
+    b.addEventListener("click", function(){
+      state.dPayMode = b.getAttribute("data-dpay");
+      Array.prototype.forEach.call(dPaySeg.querySelectorAll("button"), function(x){ x.setAttribute("aria-pressed", x === b ? "true" : "false"); });
+      document.getElementById("dPayWrap").hidden = state.dPayMode !== "custom";
+      if(state.dPayMode === "custom" && !state.dPay.length){
+        state.dPay = [{s:"Advance — on signing", p:0}, {s:"", p:0}];
+        drawDPay();
+        dPayBox.querySelector('[data-k="p"]').focus();
+      }
+      dPayHint();
+      render();
+    });
+  });
+  document.getElementById("dPayAdd").addEventListener("click", function(){
+    state.dPay.push({s:"", p:0});
+    drawDPay();
+    dPayBox.lastElementChild.querySelector("input").focus();
+    dPayHint();
+    render();
+  });
+  dPayBox.addEventListener("input", function(e){
+    var row = e.target.closest(".xrow"), k = e.target.getAttribute("data-k");
+    if(!row || !k) return;
+    var x = state.dPay[+row.getAttribute("data-i")];
+    if(k === "s") x.s = e.target.value;
+    else { var v = parseFloat(e.target.value); x.p = (isFinite(v) && v > 0) ? v : 0; }
+    e.target.style.borderColor = "";
+    dPayHint();
+    render();
+  });
+  dPayBox.addEventListener("click", function(e){
+    if(!e.target.getAttribute("data-del")) return;
+    state.dPay.splice(+e.target.closest(".xrow").getAttribute("data-i"), 1);
+    drawDPay();
+    dPayHint();
+    render();
   });
 
   // extra items — rows are rebuilt only when added or removed, so typing never loses focus
@@ -1717,7 +1791,7 @@ table.qt tr.sub td{background:#F4F8FC;font-weight:600;color:var(--navy)}
     var tb = document.getElementById("payBody");
     tb.innerHTML = "";
     var running = 0;
-    var stages = hasBuild() ? PAYMENTS : DESIGN_PAYMENTS.map(function(s, i){ return {n:i+1, s:s[0], p:s[1]}; });
+    var stages = hasBuild() ? PAYMENTS : designPayments().map(function(s, i){ return {n:i+1, s:esc(s.s) || "—", p:s.p}; });
     stages.forEach(function(m, i){
       var amt = (i === stages.length - 1)
         ? Math.round(total) - running                 // last row absorbs rounding
@@ -1738,7 +1812,7 @@ table.qt tr.sub td{background:#F4F8FC;font-weight:600;color:var(--navy)}
                   : "turnkey";
     document.getElementById("payBasis").textContent =
       "Based on a " + scopeName + " contract for " + sft(state.area || 0) +
-      (state.design && hasBuild() ? " (design fee paid separately by design stages)" : "") +
+      (state.design && hasBuild() ? (state.dPayMode === "advance" ? " (design fee paid separately, in full in advance)" : " (design fee paid separately by its own instalments)") : "") +
       (extrasTotal() ? ", extra items " + rs(extrasTotal()) : "") +
       (state.bmt ? " plus a " + sft(state.bmtArea || 0) + " basement" : "") +
       (plCost() ? ", plinth beam " + rs(plCost()) : "") +
@@ -1971,7 +2045,7 @@ table.qt tr.sub td{background:#F4F8FC;font-weight:600;color:var(--navy)}
     "Design work will start after the advance payment.",
     "Drawings are provided in A3 size for approval and construction, along with CAD files.",
     "The design fee is charged on the covered area stated above. If the covered area increases at the design stage, the fee increases at the same rate per SFT.",
-    "Each design instalment falls due on completion of its stage as per the design payment schedule.",
+    "@@DESIGN_PAY@@",
     "Changes to an approved concept are charged as additional design work.",
     "This quotation is valid for 30 days from the date of issue."];
 
@@ -2041,12 +2115,13 @@ table.qt tr.sub td{background:#F4F8FC;font-weight:600;color:var(--navy)}
         '<tr class="sub"><td class="c">—</td><td>TOTAL</td><td class="n">100%</td><td class="n">'+rs(amount)+'</td></tr></tbody></table>';
     }
     var payHtml = (build ? payTable(PAYMENTS, buildPay, dOn ? "Construction stage" : "Scope of work") : "") +
-                  (dOn ? payTable(DESIGN_PAYMENTS.map(function(s){ return {s:s[0], p:s[1]}; }), designPay, "Design stage") : "");
+                  (dOn ? payTable(designPayments(), designPay, "Design fee") : "");
     var payNote = build
       ? "Each instalment falls due on completion of the stage against it, verified on site before invoicing. " +
         (state.bmt ? "For the basement, the plinth and ground wall stages are read as basement raft, basement walls and basement slab." : "Mobilisation advance is payable on signing of the contract.") +
         (xT ? " Extra items are included in the construction instalments." : "")
-      : "Each design instalment falls due on completion of its stage." + (xT ? " Extra items are included in the design instalments." : "");
+      : designPayText() + (xT ? " Extra items are included in the design " + (state.dPayMode === "advance" ? "advance payment." : "instalments.") : "");
+    if(build && dOn) payNote += " " + designPayText();
 
     // ── exclusions and terms; extra terms typed in the estimator are added at the end
     var extMissing = EXT_ITEMS.filter(function(x){ return ext.indexOf(x) === -1; })
@@ -2056,8 +2131,10 @@ table.qt tr.sub td{background:#F4F8FC;font-weight:600;color:var(--navy)}
       .concat(extMissing.length ? ["External works — " + extMissing.join(", ")] : [])
       .concat(EXCLUSIONS.slice(-1));
     var extraTerms = document.getElementById("xTerms").value.split(/\r?\n/).map(function(t){ return t.trim(); }).filter(Boolean);
-    var quoteTerms = (!build ? DESIGN_TERMS : TERMS.filter(function(t, idx){ return !(!showG && idx === 12); })
-      .concat(dOn ? ["The design fee covers the drawings listed in the scope of work and is paid by the design stages above. Changes to an approved concept are charged as additional design work."] : []))
+    var quoteTerms = (!build ? DESIGN_TERMS.map(function(t){ return t === "@@DESIGN_PAY@@" ? designPayText() : t; })
+      : TERMS.filter(function(t, idx){ return !(!showG && idx === 12); })
+      .concat(dOn ? ["The design fee covers the drawings listed in the scope of work. " + designPayText() + " Changes to an approved concept are charged as additional design work."] : []))
+      .concat(dhaSubmission() ? [DHA_NOTE] : [])
       .concat(extraTerms);
 
     // ── scope of work
@@ -2079,7 +2156,8 @@ table.qt tr.sub td{background:#F4F8FC;font-weight:600;color:var(--navy)}
     var designScopeHtml = dOn ? '<div' + (build ? ' style="margin-top:10px"' : '') + '>' + H4 + 'Design — drawings to be provided</h4>' +
       '<table class="qt"><tbody>' + (drw.length
         ? drw.map(function(x){ return '<tr><td style="text-align:center;width:34px;color:#0057B8;font-weight:700">&#10003;</td><td><b>'+esc(x.t)+'</b>'+qd(esc(x.d))+'</td></tr>'; }).join('')
-        : '<tr><td>Drawings to be confirmed.</td></tr>') + '</tbody></table></div>' : '';
+        : '<tr><td>Drawings to be confirmed.</td></tr>') + '</tbody></table>' +
+      (dhaSubmission() ? '<div class="inwords" style="border-top:0"><b>Note</b>' + esc(DHA_NOTE) + '</div>' : '') + '</div>' : '';
 
     // ── material specification (construction only)
     var specHtml = "";
@@ -2200,6 +2278,19 @@ table.qt tr.sub td{background:#F4F8FC;font-weight:600;color:var(--navy)}
     // everything the quotation needs from the user, in form order: the first missing field is focused
     var missing = [];
     if(designOn() && !state.dRate) missing.push(dRateIn);
+    // design instalments: each needs a stage and a %, and together they must make 100%
+    if(designOn() && state.dPayMode === "custom"){
+      if(!state.dPay.length) missing.push(document.getElementById("dPayAdd"));
+      dPayBox.querySelectorAll(".xrow").forEach(function(rowEl, i){
+        var x = state.dPay[i];
+        if(!x.s.trim()) missing.push(rowEl.querySelector('[data-k="s"]'));
+        if(!x.p) missing.push(rowEl.querySelector('[data-k="p"]'));
+      });
+      if(state.dPay.length && Math.abs(dPaySum() - 100) > 0.001){
+        dPayBox.querySelectorAll('[data-k="p"]').forEach(function(el){ if(missing.indexOf(el) === -1) missing.push(el); });
+        dPayHint();
+      }
+    }
     xBox.querySelectorAll(".xrow").forEach(function(rowEl, i){
       var x = state.extras[i];
       if(x.d.trim() && !x.amt) missing.push(rowEl.querySelector('[data-k="amt"]'));
