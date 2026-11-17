@@ -99,8 +99,16 @@ test("7. design-only quotation: fee only, add-ons ignored, no construction sched
   assert.equal(e.fee.fee, 2710400);              // 12,320 × 220
   assert.equal(e.total, 2710400);
   assert.deepEqual(e.stages, []);
-  // design stages 20/15/15/20/20/10
-  assert.deepEqual(e.dAmts, [542080, 406560, 406560, 542080, 542080, 271040]);
+  assert.deepEqual(e.dStages, [["Complete design fee — in advance, on signing", 100]]);
+  assert.deepEqual(e.dAmts, [2710400]);
+});
+
+test("custom design instalments use the entered stages and total the fee", () => {
+  const stages = [["On signing", 30], ["Concept approval", 40], ["Drawings delivered", 30]];
+  const e = C.estimate(cfg({scope:"none"}), stages);
+  assert.deepEqual(e.dStages, stages);
+  assert.equal(e.dAmts.reduce((total, amount) => total + amount, 0), e.fee.fee);
+  assert.deepEqual(e.dAmts, [813120, 1084160, 813120]);
 });
 
 // ── 8–11. construction scopes on the full DHA 8 Marla Phase V envelope ─

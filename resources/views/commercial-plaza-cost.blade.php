@@ -227,6 +227,11 @@ h3{font-size:19px;font-weight:700;margin-bottom:10px}
 }
 .seg button:last-child{border-right:0}
 .seg button[aria-pressed="true"]{background:var(--blue-bright);color:#fff}
+.d-pay-rows{display:grid;gap:8px;margin-top:12px}
+.d-pay-row{display:grid;grid-template-columns:minmax(0,1fr) 90px 36px;gap:8px;align-items:center}
+.d-pay-row input{width:100%;min-width:0}
+.d-pay-row button{height:38px;border:1px solid var(--line-strong);background:#fff;color:var(--muted);font-size:20px;cursor:pointer}
+.d-pay-row button:hover{color:#B3261E;border-color:#B3261E}
 
 .plotdraw{margin-top:8px;border-top:1px dashed var(--line-strong);padding-top:18px}
 .plotdraw svg{width:100%;height:auto;max-height:210px;display:block}
@@ -719,6 +724,18 @@ ol.deliv li{padding:3px 0;break-inside:avoid}
             <button type="button" data-v="0">Not included</button>
           </div>
           <div class="hint" id="dHint"></div>
+          <div class="field" id="designPayField" hidden style="margin-top:14px">
+            <span class="ctrl-label">Design fee payment terms</span>
+            <div class="seg" role="group" aria-label="Design fee payment terms" id="designPaySeg">
+              <button type="button" data-v="advance" aria-pressed="true">100% advance</button>
+              <button type="button" data-v="custom">Instalments by stage</button>
+            </div>
+            <div id="designPayWrap" hidden style="margin-top:12px">
+              <div class="d-pay-rows" id="designPayRows"></div>
+              <button type="button" class="linkbtn" id="designPayAdd">+ Add instalment</button>
+              <div class="hint" id="designPayHint"></div>
+            </div>
+          </div>
         </div>
 
         <div class="field">
@@ -987,7 +1004,7 @@ ol.deliv li{padding:3px 0;break-inside:avoid}
     <h3 style="margin-top:44px;font-size:20px">Deliverables</h3>
     <ol class="deliv" id="delivList"></ol>
 
-    <h3 style="margin-top:40px;font-size:20px">Design fee payment stages</h3>
+    <h3 style="margin-top:40px;font-size:20px">Design fee payment terms</h3>
     <div class="tablewrap" style="margin-top:16px">
       <table>
         <thead><tr><th class="num" style="width:60px">SR</th><th>Stage</th><th class="num" style="width:110px">%age</th><th class="num" style="width:200px">Amount (Rs)</th></tr></thead>
@@ -1286,7 +1303,7 @@ ol.deliv li{padding:3px 0;break-inside:avoid}
     return;
   }
   var STD = C.STD, DESIGN = C.DESIGN, MAX = C.MAX, CITIES = C.CITIES, AUTHS = C.AUTHS, DHA_PLOTS = C.DHA_PLOTS,
-      TL = C.TL, DESIGN_STAGES = C.DESIGN_STAGES, ADDONS = C.ADDONS;
+      TL = C.TL, ADDONS = C.ADDONS;
   var fmt = C.fmt, num = C.num, ordinal = C.ordinal, extend = C.extend, byId = C.byId, configStr = C.configStr,
       defMumty = C.defMumty, sizeName = C.sizeName, cityRates = C.cityRates, dims = C.dims, rowsOf = C.rowsOf,
       sumAreas = C.sumAreas, levelName = C.levelName, finRates = C.finRates, costOf = C.costOf,
@@ -1392,7 +1409,7 @@ ol.deliv li{padding:3px 0;break-inside:avoid}
     cov:extend(AUTHS[0].cov, {}), mumty:275, mumtyEdited:false,
     b:1, m:true, u:4, lmr:true, clear:0, setback:0, applied:null, over:{},
     bmtUse:"shop", scope:"turnkey", level:"std",
-    design:true, customRates:false,
+    design:true, designPayMode:"advance", designPayRows:[], customRates:false,
     rates:extend(STD, {}), dr:extend(DESIGN, {}), ads:{},
     cDays:0, dDays:0   // completion times entered for the quotation — construction, and design & approval (0 = not entered)
   };
@@ -1402,6 +1419,60 @@ ol.deliv li{padding:3px 0;break-inside:avoid}
   function authObj(){ return byId(AUTHS, state.auth); }
   function rates(){ return state.customRates ? state.rates : cityRates(cityObj()); }
   function dRates(){ return state.customRates ? state.dr : DESIGN; }
+  function designPaymentStages(){
+    return state.designPayMode === "advance"
+      ? [["Complete design fee — in advance, on signing", 100]]
+      : state.designPayRows.map(function(row){ return [row.s.trim(), row.p]; });
+  }
+  function designPaymentSum(){
+    return state.designPayRows.reduce(function(total, row){ return total + (row.p || 0); }, 0);
+  }
+  function drawDesignPayRows(){
+    document.getElementById("designPayRows").innerHTML = state.designPayRows.map(function(row, i){
+      return '<div class="d-pay-row" data-i="' + i + '">' +
+        '<input type="text" class="txt" data-k="s" placeholder="Stage, e.g. On approval of concept" aria-label="Design instalment ' + (i + 1) + ' stage" value="' + esc(row.s) + '">' +
+        '<input type="number" data-k="p" min="0" max="100" step="any" inputmode="decimal" placeholder="%" aria-label="Design instalment ' + (i + 1) + ' percentage" value="' + (row.p || "") + '">' +
+        '<button type="button" data-del="1" aria-label="Remove design instalment">&times;</button></div>';
+    }).join("");
+  }
+  function updateDesignPayHint(){
+    var total = designPaymentSum(), valid = Math.abs(total - 100) < 0.001;
+    var hint = document.getElementById("designPayHint");
+    hint.textContent = "Total " + (Math.round(total * 100) / 100) + "% of 100%." +
+      (valid ? "" : " Design instalments must add up to 100%.");
+    hint.style.color = valid || !state.designPayRows.length ? "" : "#B3261E";
+  }
+  function designPaymentTermsText(){
+    if(state.designPayMode === "advance") return "The complete design fee is payable in advance, on signing.";
+    return "The design fee is payable in " + state.designPayRows.length + " instalment" +
+      (state.designPayRows.length === 1 ? "" : "s") +
+      " according to the design payment schedule; each is due on completion of its stated stage.";
+  }
+  function validateDesignPayments(){
+    if(!state.design || state.designPayMode !== "custom") return true;
+    var rows = document.getElementById("designPayRows"), missing = [];
+    if(!state.designPayRows.length){
+      document.getElementById("designPayAdd").focus();
+      updateDesignPayHint();
+      return false;
+    }
+    rows.querySelectorAll(".d-pay-row").forEach(function(rowEl, i){
+      var row = state.designPayRows[i];
+      if(!row.s.trim()) missing.push(rowEl.querySelector('[data-k="s"]'));
+      if(!row.p || row.p > 100) missing.push(rowEl.querySelector('[data-k="p"]'));
+    });
+    if(Math.abs(designPaymentSum() - 100) > 0.001){
+      rows.querySelectorAll('[data-k="p"]').forEach(function(input){ if(missing.indexOf(input) === -1) missing.push(input); });
+    }
+    if(missing.length){
+      missing.forEach(function(input){ input.style.borderColor = "#B3261E"; });
+      missing[0].scrollIntoView({block:"center"});
+      missing[0].focus();
+      updateDesignPayHint();
+      return false;
+    }
+    return true;
+  }
   function plotLabel(){
     var p = state.preset ? byId(PRESETS, state.preset) : null;
     return p && p.id === state.preset ? p.label : sizeName(state.w * state.d);
@@ -1516,6 +1587,50 @@ ol.deliv li{padding:3px 0;break-inside:avoid}
   onSeg("scopeSeg", function(v){ state.scope = v; if(v === "none") state.design = true; renderAll(); });
   onSeg("levelSeg", function(v){ state.level = v; render(); });
   onSeg("designSeg", function(v){ state.design = v === "1"; renderAll(); });
+  var designPaySeg = document.getElementById("designPaySeg");
+  Array.prototype.forEach.call(designPaySeg.querySelectorAll("button"), function(button){
+    button.addEventListener("click", function(){
+      state.designPayMode = button.getAttribute("data-v");
+      Array.prototype.forEach.call(designPaySeg.querySelectorAll("button"), function(option){
+        option.setAttribute("aria-pressed", option === button ? "true" : "false");
+      });
+      document.getElementById("designPayWrap").hidden = state.designPayMode !== "custom";
+      if(state.designPayMode === "custom" && !state.designPayRows.length){
+        state.designPayRows = [{s:"Advance — on signing", p:0}, {s:"", p:0}];
+        drawDesignPayRows();
+        document.querySelector('#designPayRows [data-k="p"]').focus();
+      }
+      updateDesignPayHint();
+      render();
+    });
+  });
+  document.getElementById("designPayAdd").addEventListener("click", function(){
+    state.designPayRows.push({s:"", p:0});
+    drawDesignPayRows();
+    document.getElementById("designPayRows").lastElementChild.querySelector("input").focus();
+    updateDesignPayHint();
+    render();
+  });
+  document.getElementById("designPayRows").addEventListener("input", function(event){
+    var rowEl = event.target.closest(".d-pay-row"), key = event.target.getAttribute("data-k");
+    if(!rowEl || !key) return;
+    var row = state.designPayRows[+rowEl.getAttribute("data-i")];
+    if(key === "s") row.s = event.target.value;
+    else {
+      var value = parseFloat(event.target.value);
+      row.p = isFinite(value) && value > 0 ? value : 0;
+    }
+    event.target.style.borderColor = "";
+    updateDesignPayHint();
+    render();
+  });
+  document.getElementById("designPayRows").addEventListener("click", function(event){
+    if(!event.target.getAttribute("data-del")) return;
+    state.designPayRows.splice(+event.target.closest(".d-pay-row").getAttribute("data-i"), 1);
+    drawDesignPayRows();
+    updateDesignPayHint();
+    render();
+  });
   onSeg("rateSeg", function(v){
     var toCustom = v === "custom";
     if(toCustom && !state.customRates){
@@ -1709,6 +1824,9 @@ ol.deliv li{padding:3px 0;break-inside:avoid}
     pressSeg("designSeg", state.design ? "1" : "0");
     document.querySelector('#designSeg [data-v="0"]').disabled = state.scope === "none";
     document.getElementById("dHint").hidden = !state.design;
+    document.getElementById("designPayField").hidden = !state.design;
+    pressSeg("designPaySeg", state.designPayMode);
+    document.getElementById("designPayWrap").hidden = state.designPayMode !== "custom";
     pressSeg("rateSeg", state.customRates ? "custom" : "std");
     var cr = cityRates(city);
     document.getElementById("rateHint").textContent = state.customRates ? ""
@@ -1737,7 +1855,7 @@ ol.deliv li{padding:3px 0;break-inside:avoid}
   }
 
   function render(){
-    var e = estimate(cfgNow()), cfg = e.cfg, c = {gray:e.gray, fin:e.fin, build:e.build, a:e.a};
+    var e = estimate(cfgNow(), designPaymentStages()), cfg = e.cfg, c = {gray:e.gray, fin:e.fin, build:e.build, a:e.a};
     var ads = e.ads, fee = e.fee, dur = e.dur, addT = e.addT, contract = e.contract, feeT = e.feeT, total = e.total, a = e.a;
     document.getElementById("calcWarn").textContent = e.warnings.length ? "Check inputs: " + e.warnings.join(" · ") + "." : "";
 
@@ -1827,11 +1945,14 @@ ol.deliv li{padding:3px 0;break-inside:avoid}
       : "Select a construction scope in the estimator to build the schedule.";
 
     var dFee = (fee || designFeeOf(costOf(cfg).a.total, cfg.dr)).fee;
-    document.getElementById("dPayBody").innerHTML = payRowsHtml(DESIGN_STAGES, dFee);
+    var dStages = designPaymentStages();
+    document.getElementById("dPayBody").innerHTML = dStages.length
+      ? payRowsHtml(dStages, dFee)
+      : '<tr><td colspan="4" style="text-align:center;color:#5A6B82;padding:18px">Add design instalments to build this schedule.</td></tr>';
     document.getElementById("dPayTotal").textContent = rs(dFee);
     document.getElementById("dPayBasis").textContent = fee
-      ? "Design fee for the plaza in the estimator — " + rs(dFee) + "."
-      : "Design is not selected in the estimator; amounts show the fee for its covered area at Rs " + fmt(cfg.dr.sft) + " per SFT.";
+      ? "Design fee for the plaza in the estimator — " + rs(dFee) + ". " + designPaymentTermsText()
+      : "Design is not selected in the estimator; amounts show the fee for its covered area at Rs " + fmt(cfg.dr.sft) + " per SFT. " + designPaymentTermsText();
   }
 
   // ── reference tables ──────────────────────────
@@ -2137,7 +2258,7 @@ ol.deliv li{padding:3px 0;break-inside:avoid}
       basis,
       "This quotation is valid for 30 days from the date of issue.",
       "Government taxes, duties and levies applicable at the time of billing are extra unless expressly included.",
-      "Each design instalment falls due on completion of its stage as per the design payment schedule.",
+      designPaymentTermsText(),
       "The design fee covers the deliverables listed in this quotation. Authority scrutiny fees, challans and NOC charges are paid by the client. Changes to an approved concept are charged as additional design work.",
       "Construction is not part of this quotation and will be quoted separately on the approved design."
     ];
@@ -2158,7 +2279,10 @@ ol.deliv li{padding:3px 0;break-inside:avoid}
     t.push("Material brands are as per the approved schedule. All reinforcement steel is Grade 60 (60,000 psi). Equivalent alternates may be proposed and are subject to written approval.");
     t.push("In the event of abnormal escalation in the price of cement, steel or other primary materials, rates shall be reviewed by mutual consent.");
     if(ads.length) t.push("Prices for imported equipment — lifts, generators, HVAC, transformers and similar — are linked to the exchange rate and confirmed at the time of order.");
-    if(cfg.design) t.push("The design fee covers the deliverables listed in this quotation. Authority scrutiny fees, challans and NOC charges are paid by the client. Changes to an approved concept are charged as additional design work.");
+    if(cfg.design){
+      t.push(designPaymentTermsText());
+      t.push("The design fee covers the deliverables listed in this quotation. Authority scrutiny fees, challans and NOC charges are paid by the client. Changes to an approved concept are charged as additional design work.");
+    }
     if(cfg.scope !== "none"){
       t.push("A defects liability period of twelve months from the date of handover applies to workmanship. The 5% retention is released at its end.");
       t.push("ACCO provides a 10-year structural warranty on the RCC frame structure — foundation, retaining walls, columns, beams and slabs — from the date of handover, covering defects in structural design and workmanship. This warranty excludes damage from natural disasters, unauthorised structural alterations, additional loads not accounted for in the approved design, or lack of routine maintenance.");
@@ -2193,7 +2317,7 @@ ol.deliv li{padding:3px 0;break-inside:avoid}
   var QREF = "";
   function buildQuote(){
     QREF = refNo();
-    var e = estimate(cfgNow()), cfg = e.cfg, c = {build:e.build, a:e.a, rows:e.rows, L:e.lines};
+    var e = estimate(cfgNow(), designPaymentStages()), cfg = e.cfg, c = {build:e.build, a:e.a, rows:e.rows, L:e.lines};
     var ads = e.ads, fee = e.fee, dur = e.dur, contract = e.contract, total = e.total;
     var D = dims(cfg), a = e.a, cv = cfg.cov, hasG = cfg.scope !== "none", hasF = cfg.scope === "shell" || cfg.scope === "turnkey";
 
@@ -2274,10 +2398,12 @@ ol.deliv li{padding:3px 0;break-inside:avoid}
     if(fee){
       var damts = e.dAmts;
       html4 += '<table class="qt"' + (stages.length ? ' style="margin-top:8px"' : '') + '><thead><tr><th class="c">SR</th><th>Design stage</th><th class="n">%age</th><th class="n">Amount (Rs)</th></tr></thead><tbody>' +
-        DESIGN_STAGES.map(function(st, i){ return '<tr><td class="c">' + (i + 1) + '</td><td>' + esc(st[0]) + '</td><td class="n">' + st[1] + '%</td><td class="n">' + rs(damts[i]) + '</td></tr>'; }).join("") +
+        e.dStages.map(function(st, i){ return '<tr><td class="c">' + (i + 1) + '</td><td>' + esc(st[0]) + '</td><td class="n">' + pctTxt(st[1]) + '</td><td class="n">' + rs(damts[i]) + '</td></tr>'; }).join("") +
         '<tr class="sub"><td class="c">—</td><td>TOTAL DESIGN FEE</td><td class="n">100%</td><td class="n">' + rs(fee.fee) + '</td></tr></tbody></table>';
     }
-    html4 += '<div class="inwords" style="border-top:0"><b>Note</b>Each instalment falls due on completion of the stage against it, verified on site before invoicing. Add-ons are included in the construction instalments.</div></div>';
+    html4 += '<div class="inwords" style="border-top:0"><b>Note</b>' +
+      (hasG ? 'Construction instalments fall due on completion of the stage against it, verified on site before invoicing. Add-ons are included in the construction instalments.' : '') +
+      '</div></div>';
 
     // ── timeline
     // durations are the days entered in the estimator
@@ -2354,6 +2480,7 @@ ol.deliv li{padding:3px 0;break-inside:avoid}
 
   document.getElementById("qGen").addEventListener("click", function(){
     // completion times are always entered by hand: construction when there is construction, design & approval when design is included
+    if(!validateDesignPayments()) return;
     var need = [];
     if(state.scope !== "none" && !state.cDays) need.push("cDays");
     if(state.design && !state.dDays) need.push("dDays");

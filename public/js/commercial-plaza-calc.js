@@ -87,15 +87,6 @@
     xl:    {mob:40, bmt:80, g:35, m:28, u:30, roof:35, fb:170, fu:25}
   };
 
-  var DESIGN_STAGES = [
-    ["Mobilisation — on signing", 20],
-    ["Concept plans approved by client", 15],
-    ["3D elevation approved", 15],
-    ["Submission drawings delivered to the approving authority", 20],
-    ["Structural, MEP and working drawings delivered", 20],
-    ["Approval received — complete set handed over", 10]
-  ];
-
   var ADDONS = [
     {id:"lift", label:"Passenger lift", unit:"lifts", short:"lift",
       opts:[{k:"6", label:"6 person (450 kg)", rate:3000000},{k:"8", label:"8 person (630 kg)", rate:3600000},
@@ -391,7 +382,7 @@
   //   design fee            = max(covered SFT × design rate, minimum)   (if design is included)
   //   preliminary total     = construction contract + design fee
   // Add-ons are construction items, so they are ignored when the scope is design only.
-  function estimate(input){
+  function estimate(input, designStages){
     var cfg = sanitize(input);
     var c = costOf(cfg), hasG = cfg.scope !== "none";
     var ads = hasG ? addonLines(cfg, c) : [];
@@ -399,19 +390,20 @@
     var contract = c.build + addT;
     var fee = designFee(cfg, c), feeT = fee ? fee.fee : 0;
     var stages = payStages(cfg);
+    var dStages = fee ? (designStages || [["Complete design fee — in advance, on signing", 100]]) : [];
     return {
       cfg:cfg, warnings:cfg.warnings,
       rows:c.rows, a:c.a, lines:c.L, gray:c.gray, fin:c.fin, build:c.build,
       ads:ads, addT:addT, contract:contract, fee:fee, feeT:feeT, total:contract + feeT,
       dur:durOf(cfg),
       stages:stages, payAmts:stageAmounts(contract, stages),
-      dStages: fee ? DESIGN_STAGES : [], dAmts: fee ? stageAmounts(fee.fee, DESIGN_STAGES) : []
+      dStages:dStages, dAmts:stageAmounts(feeT, dStages)
     };
   }
 
   return {
     STD:STD, DESIGN:DESIGN, LMR_AREA:LMR_AREA, MAX:MAX, CITIES:CITIES, AUTHS:AUTHS, DHA_PLOTS:DHA_PLOTS,
-    TL:TL, DESIGN_STAGES:DESIGN_STAGES, ADDONS:ADDONS,
+    TL:TL, ADDONS:ADDONS,
     fmt:fmt, num:num, ordinal:ordinal, extend:extend, byId:byId, configStr:configStr, defMumty:defMumty, sizeName:sizeName,
     cityRates:cityRates, sanitize:sanitize, dims:dims, rowsOf:rowsOf, sumAreas:sumAreas, levelName:levelName,
     finRates:finRates, costLines:costLines, costOf:costOf, designFeeOf:designFeeOf, designFee:designFee,
