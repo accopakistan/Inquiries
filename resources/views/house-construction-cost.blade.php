@@ -218,7 +218,12 @@ h3{font-size:19px;font-weight:700;margin-bottom:10px}
 
 .chkline{display:flex;align-items:center;gap:9px;font-size:14px;color:var(--navy);cursor:pointer;margin:0 0 7px}
 .chkline input{width:17px;height:17px;accent-color:var(--blue-bright);margin:0;flex:none}
-#extItems .chkline{font-size:13.5px;color:#3B4A5E}
+#extItems .chkline,#surItems .chkline{font-size:13.5px;color:#3B4A5E;margin:0}
+.extrow{display:grid;grid-template-columns:minmax(0,1fr) 150px;gap:8px;align-items:center;margin-bottom:7px}
+.field .extrow input[type=number]{font-size:14.5px;padding:8px 10px}
+.extrow input[type=number]:disabled{background:#F2F5FA;color:#8B9AAE}
+#surItems .chkline{margin-bottom:7px}
+#surItems small{color:var(--muted);font-size:12px;margin-left:4px}
 .mini{display:block;font-family:"IBM Plex Mono";font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
 .grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px 12px}
 .field .grid2 input[type=number]{font-size:16px;padding:10px 12px}
@@ -648,7 +653,23 @@ table.qt tr.sub td{background:#F4F8FC;font-weight:600;color:var(--navy)}
           <label class="chkline"><input type="checkbox" id="extOn"> Add external works to the scope of work</label>
           <div id="extWrap" hidden style="margin-top:12px">
             <div id="extItems"></div>
-            <div class="hint">Ticked items are listed in the quotation's scope of work, within the quoted rates. Unticked items are listed under exclusions.</div>
+            <div class="hint">Enter an amount for each ticked item. Ticked items are priced as separate lines in the cost summary, the total and the payment schedule. Unticked items are listed under exclusions.</div>
+          </div>
+        </div>
+
+        <div class="field" id="surField">
+          <span class="ctrl-label">Site surcharges <span style="text-transform:none;letter-spacing:0;color:#8B9AAE">(gray structure)</span></span>
+          <div id="surItems"></div>
+          <div class="hint">Each ticked surcharge is a separate line in the cost summary and is included in the total and the payment schedule.</div>
+        </div>
+
+        <div class="field" id="dcField">
+          <span class="ctrl-label">Delay compensation</span>
+          <label class="chkline"><input type="checkbox" id="dcOn"> Add the mutual delay compensation clause</label>
+          <div id="dcWrap" hidden style="margin-top:12px">
+            <label class="ctrl-label" for="dcAmt">Compensation per month of delay (Rs)</label>
+            <input type="number" id="dcAmt" min="0" step="5000" inputmode="numeric">
+            <div class="hint">ACCO pays this per month if handover is late while every instalment was paid on time; the client pays the same per month for late instalments. Defaults by plot size.</div>
           </div>
         </div>
 
@@ -656,10 +677,13 @@ table.qt tr.sub td{background:#F4F8FC;font-weight:600;color:var(--navy)}
           <span class="ctrl-label">Plinth beam</span>
           <label class="chkline"><input type="checkbox" id="plOn"> Add plinth beam to the contract</label>
           <div id="plWrap" hidden style="margin-top:12px">
-            <label class="ctrl-label" for="plAmt">Plinth beam amount (Rs, lump sum)</label>
-            <input type="number" id="plAmt" min="0" step="1000" inputmode="numeric" placeholder="Enter amount">
+            <div class="grid2">
+              <div><label class="mini" for="plArea">Area (SFT)</label><input type="number" id="plArea" min="0" step="any" inputmode="decimal" placeholder="Enter area"></div>
+              <div><label class="mini" for="plRate">Rate (Rs / SFT)</label><input type="number" id="plRate" min="0" step="any" inputmode="decimal" placeholder="Enter rate"></div>
+            </div>
+            <div class="hint" id="plCalc"></div>
           </div>
-          <div class="hint" id="plHint">Not every site needs one. When ticked, the amount is added to the cost summary, the total and the payment schedule as a separate line.</div>
+          <div class="hint" id="plHint">Not every site needs one. When ticked, area × rate is added to the cost summary, the total and the payment schedule as a separate line.</div>
         </div>
 
         <div class="field">
@@ -727,12 +751,16 @@ table.qt tr.sub td{background:#F4F8FC;font-weight:600;color:var(--navy)}
           <div class="v" id="oX">—</div>
         </div>
         <div class="out-row" id="rowPl" hidden>
-          <div class="k">Plinth beam<em>LUMP SUM · GRAY STRUCTURE</em></div>
+          <div class="k">Plinth beam<em id="lPl">AREA × RATE · GRAY STRUCTURE</em></div>
           <div class="v" id="oPl">—</div>
         </div>
         <div class="out-row" id="rowExt" hidden>
           <div class="k">External works<em id="lExt">—</em></div>
           <div class="v" id="oExt">—</div>
+        </div>
+        <div class="out-row" id="rowSur" hidden>
+          <div class="k">Site surcharges<em id="lSur">—</em></div>
+          <div class="v" id="oSur">—</div>
         </div>
         <div class="out-row">
           <div class="k">Covered area<em>PRICED QUANTITY</em></div>
@@ -811,7 +839,7 @@ table.qt tr.sub td{background:#F4F8FC;font-weight:600;color:var(--navy)}
           <li>Brick masonry</li><li>Cement plaster</li><li>Staircase</li>
           <li>Underground water tank</li><li>Overhead water tank</li>
         </ul>
-        <p style="font-size:13px;color:var(--muted);margin:14px 0 0">Plinth beam is optional — not every site needs one. Where required it is priced separately as a lump sum.</p>
+        <p style="font-size:13px;color:var(--muted);margin:14px 0 0">Plinth beam is optional — not every site needs one. Where required it is priced separately on its area at an agreed rate per SFT.</p>
       </div>
       <div class="card">
         <h3>Standard finishing</h3>
@@ -1211,22 +1239,84 @@ table.qt tr.sub td{background:#F4F8FC;font-weight:600;color:var(--navy)}
   var GRAY = 2850, FIN = 2800;
   var BMT_GRAY = 5500, BMT_FIN = 2800;
 
+  // v: the verification trigger — what must be complete on site before the instalment is invoiced
   var PAYMENTS = [
-    {n:1, s:"Mobilisation advance",              p:20},
-    {n:2, s:"Ground floor walls up to plinth",   p:15},
-    {n:3, s:"Ground floor walls",                p:20},
-    {n:4, s:"Ground floor slab",                 p:20},
-    {n:5, s:"First floor walls and slab",        p:20},
-    {n:6, s:"After completion of project",       p:5}
+    {n:1, s:"Mobilisation advance",              p:20, v:"On signing of the contract — site handover, layout and mobilisation"},
+    {n:2, s:"Ground floor walls up to plinth",   p:15, v:"Excavation, PCC, foundation, anti-termite treatment and DPC complete"},
+    {n:3, s:"Ground floor walls",                p:20, v:"Ground floor columns and brick masonry complete, door frames set"},
+    {n:4, s:"Ground floor slab",                 p:20, v:"Ground floor roof slab cast and curing started"},
+    {n:5, s:"First floor walls and slab",        p:20, v:"First floor masonry, roof slab, mumty and parapet complete"},
+    {n:6, s:"After completion of project",       p:5,  v:"Handover — snag list cleared and keys handed over"}
   ];
 
+  // dc: default delay compensation per month; ht: extra charge per foot of extra height, per floor (whole plot)
   var PLOTS = [
-    {id:"5m",  label:"5 Marla",  w:25, d:45,  plot:1125, area:2000,  gd:70,  fd:50},
-    {id:"7m",  label:"7 Marla",  w:30, d:52.5, plot:1575, area:2800,  gd:90,  fd:60},
-    {id:"8m",  label:"8 Marla",  w:30, d:60,  plot:1800, area:3000,  gd:100, fd:65},
-    {id:"10m", label:"10 Marla", w:35, d:65,  plot:2275, area:3450,  gd:105, fd:75},
-    {id:"1k",  label:"1 Kanal",  w:50, d:90,  plot:4500, area:5500,  gd:125, fd:85},
-    {id:"2k",  label:"2 Kanal",  w:75, d:120, plot:9000, area:11000, gd:160, fd:110}
+    {id:"5m",  label:"5 Marla",  w:25, d:45,  plot:1125, area:2000,  gd:70,  fd:50,  dc:25000,  ht:200000},
+    {id:"7m",  label:"7 Marla",  w:30, d:52.5, plot:1575, area:2800,  gd:90,  fd:60,  dc:30000,  ht:250000},
+    {id:"8m",  label:"8 Marla",  w:30, d:60,  plot:1800, area:3000,  gd:100, fd:65,  dc:30000,  ht:275000},
+    {id:"10m", label:"10 Marla", w:35, d:65,  plot:2275, area:3450,  gd:105, fd:75,  dc:35000,  ht:325000},
+    {id:"1k",  label:"1 Kanal",  w:50, d:90,  plot:4500, area:5500,  gd:125, fd:85,  dc:50000,  ht:450000},
+    {id:"2k",  label:"2 Kanal",  w:75, d:120, plot:9000, area:11000, gd:160, fd:110, dc:100000, ht:700000}
+  ];
+
+  // site surcharges on the above-ground gray structure — pct: % of the gray amount, sft: Rs per SFT of covered area
+  var SURCHARGES = [
+    {id:"corner",  t:"Corner plot",              pct:2.5},
+    {id:"single",  t:"Single-storey house",      sft:300},
+    {id:"outside", t:"Project outside Lahore",   sft:100},
+    {id:"spanish", t:"Spanish-style elevation",  sft:150}
+  ];
+
+  // material prices the gray structure rate is based on — escalation is measured against these
+  var BENCH = {cement:1500, steel:250, bricks:20000, steelKg:2, steelKgBmt:5};
+
+  // standard rates for variations and additions after the contract is signed
+  function variationRates(){
+    return [
+      ["Extra floor height above 10'-0\", or foundation deeper than 5'-6\" (PCC to DPC)", "Rs " + state.plot.ht.toLocaleString("en-US") + " per foot, per floor", "Whole plot, " + state.plot.label + "; adds 3 working days per foot"],
+      ["Basement height above 10'-0\"", "Rs 500 per SFT per foot", "On basement area"],
+      ["Additional 9\" brick wall with plaster", "Rs 1,300 per SFT", "Wall face area"],
+      ["Additional 4.5\" brick wall with plaster", "Rs 1,000 per SFT", "Wall face area"],
+      ["Raising parapet height (RCC)", "Rs 900 per SFT", "Additional wall area"],
+      ["Brick ballast and PCC on roof for solar panels", "Rs 300 per SFT", "Roof area treated"],
+      ["Extra RCC water or septic tank", "Rs 300 per gallon", "Tank capacity"],
+      ["Additional electrical or telephone point after plaster", "Rs 5,000 per point", "Chasing, conduit and making good"],
+      ["Additional gas point after plaster", "Rs 15,000 per point", "Chasing, pipe and making good"],
+      ["Reconstruction of shades after casting", "100% of the gray structure rate", "On shade area"],
+      ["Covered area added after gray structure completion", "2× the gray structure rate", "On added area"]
+    ];
+  }
+
+  // measurement rules — how the billed covered area is taken
+  var MEASURE = [
+    "Covered area is measured edge-to-edge of the RCC slabs at each floor, including the mumty and covered porch, on completion of the structure.",
+    "Window and door shades, and the underground and overhead water tanks, are not added to the measured area.",
+    "Canopies and taper shades are charged at 1.5× the gray structure rate on their area.",
+    "Double-height spaces are charged at 2× the rate on their floor area; domes at 2.5×.",
+    "Pergolas and architectural open-roof frames are charged at the full rate on their plan area.",
+    "Shelves and projections 3\" thick are charged at 50% of the rate; 5\" to 6\" thick shades and slabs at the full rate.",
+    "Open passages, porch apron and driveway are not part of the covered area; they are priced under external works where included."
+  ];
+  // design assumptions the rates are built on — anything beyond them is a variation
+  var ASSUME = [
+    "Ground floor finished level +2'-0\" above road level; porch and side passages +1'-0\".",
+    "Foundation depth from PCC to DPC up to 5'-6\".",
+    "Floor-to-ceiling height 10'-0\" on every floor; basement 10'-0\".",
+    "RCC slabs 6\" thick, or as per the structural design.",
+    "Parapet up to 3'-0\" high; mumty up to 9'-6\" high.",
+    "All stairs are in RCC; steel stairs are not part of the contract.",
+    "Plot handed over clean and at natural ground level, with truck access to the site."
+  ];
+  // client's responsibilities during construction
+  var CLIENT_RESP = [
+    "Temporary electricity and water connection, or a bore with pump, and their bills during construction.",
+    "Site watchman during construction; ACCO provides all machinery, tools and shuttering.",
+    "A clean plot free of debris and garbage at mobilisation; removal of fill below natural ground level.",
+    "Material transport from the main road where the street or society does not allow trucks to reach the plot.",
+    "Protection of neighbouring buildings during basement excavation, and any excavation charged by the society (for example DHA).",
+    "A dewatering pump where the water table requires it.",
+    "Material testing laboratory fees.",
+    "Timely approval of drawings, material selections and society permissions."
   ];
 
   var BMT_DAYS = 60;   // basement adds 60 days to any house
@@ -1354,8 +1444,9 @@ table.qt tr.sub td{background:#F4F8FC;font-weight:600;color:var(--navy)}
   // ── estimator ─────────────────────────────────
   var state = { plot: PLOTS[4], scope: "turnkey", area: PLOTS[4].area, custom:false, bmt:false, bmtArea: PLOTS[4].area/2,
                 customRates:false, rates:{g:GRAY, f:FIN, bg:BMT_GRAY, bf:BMT_FIN},
-                ext:false, extSel:EXT_ITEMS.map(function(){ return true; }),
-                pl:false, plAmt:0, days:0,     // days: construction completion time entered for the quotation (0 = not entered yet)
+                ext:false, extSel:EXT_ITEMS.map(function(){ return true; }), extAmt:EXT_ITEMS.map(function(){ return 0; }),
+                sur:{}, dc:false, dcAmt:PLOTS[4].dc,
+                pl:false, plArea:0, plRate:0, days:0,     // days: construction completion time entered for the quotation (0 = not entered yet)
                 design:false, dRate:0, dDays:0, dDrw:{}, extras:[],
                 dPayMode:"advance", dPay:[] };   // dPay: [{s: stage, p: percent}] when design fee is paid in instalments
 
@@ -1405,12 +1496,29 @@ table.qt tr.sub td{background:#F4F8FC;font-weight:600;color:var(--navy)}
   }
   var DHA_NOTE = "Ahmed Construction Company will take care of the complete submission process with the DHA authorities, including follow-up of observations until approval.";
 
-  // plinth beam — optional gray structure item, priced as a lump sum; never part of a finishing-only contract
+  // plinth beam — optional gray structure item, priced as area × rate; never part of a finishing-only contract
   function plOn(){ return state.pl && hasG(); }
-  function plCost(){ return plOn() ? state.plAmt : 0; }
+  function plCost(){ return plOn() ? Math.round(state.plArea * state.plRate) : 0; }
 
-  // ticked external works — listed in the scope of work, within the quoted rates (no cost line)
+  // ticked external works — each priced as its own lump-sum cost line
   function extList(){ return (state.ext && hasBuild()) ? EXT_ITEMS.filter(function(x, i){ return state.extSel[i]; }) : []; }
+  function extLines(){
+    return (state.ext && hasBuild()) ? EXT_ITEMS.map(function(x, i){ return {t:x, amt:state.extAmt[i], i:i}; })
+      .filter(function(x){ return state.extSel[x.i]; }) : [];
+  }
+  function extCost(){ return extLines().reduce(function(t, x){ return t + x.amt; }, 0); }
+
+  // site surcharges — gray structure scopes only, on the above-ground covered area
+  function surLines(){
+    if(!hasG()) return [];
+    var a = state.area || 0, g = a * rates().g;
+    return SURCHARGES.filter(function(s){ return state.sur[s.id]; }).map(function(s){
+      return s.pct ? {t:s.t, d:s.pct + "% of the gray structure amount", qty:"—", rate:s.pct + "%", amt:Math.round(g * s.pct / 100)}
+                   : {t:s.t, d:"Added to the gray structure rate", qty:Math.round(a).toLocaleString("en-US"), rate:s.sft.toLocaleString("en-US"), amt:a * s.sft};
+    });
+  }
+  function surTotal(){ return surLines().reduce(function(t, x){ return t + x.amt; }, 0); }
+  function dcOn(){ return state.dc && hasBuild() && state.dcAmt > 0; }
 
   // active rates — manual entries when "Enter rates manually" is selected, otherwise the standard 2026 rates
   function rates(){
@@ -1449,6 +1557,8 @@ table.qt tr.sub td{background:#F4F8FC;font-weight:600;color:var(--navy)}
     b.addEventListener("click", function(){
       state.plot = p; state.area = p.area; state.custom = false;
       state.bmtArea = Math.round(p.area/2/50)*50;
+      state.dcAmt = p.dc;
+      document.getElementById("dcAmt").value = p.dc;
       document.getElementById("area").value = p.area;
       document.getElementById("bmtArea").value = state.bmtArea;
       Array.prototype.forEach.call(chips.children, function(c){ c.setAttribute("aria-pressed","false"); });
@@ -1509,23 +1619,57 @@ table.qt tr.sub td{background:#F4F8FC;font-weight:600;color:var(--navy)}
   var extOn = document.getElementById("extOn"), extWrap = document.getElementById("extWrap");
   var extItems = document.getElementById("extItems");
   extItems.innerHTML = EXT_ITEMS.map(function(x, i){
-    return '<label class="chkline"><input type="checkbox" data-i="' + i + '" checked> ' + x + '</label>';
+    return '<div class="extrow"><label class="chkline"><input type="checkbox" data-i="' + i + '" checked> ' + x + '</label>' +
+      '<input type="number" data-a="' + i + '" min="0" step="1000" inputmode="numeric" placeholder="Amount (Rs)" aria-label="' + x + ' amount"></div>';
   }).join("");
   extOn.addEventListener("change", function(){ state.ext = extOn.checked; extWrap.hidden = !state.ext; render(); });
   extItems.addEventListener("change", function(e){
     var i = e.target.getAttribute("data-i");
     if(i === null) return;
     state.extSel[+i] = e.target.checked;
+    var amtIn = extItems.querySelector('[data-a="' + i + '"]');
+    amtIn.disabled = !e.target.checked;
+    amtIn.style.borderColor = "";
+    render();
+  });
+  extItems.addEventListener("input", function(e){
+    var i = e.target.getAttribute("data-a");
+    if(i === null) return;
+    var v = parseFloat(e.target.value);
+    state.extAmt[+i] = (isFinite(v) && v > 0) ? v : 0;
+    e.target.style.borderColor = "";
     render();
   });
 
-  var plChk = document.getElementById("plOn"), plAmtIn = document.getElementById("plAmt");
-  plChk.addEventListener("change", function(){ state.pl = plChk.checked; render(); });
-  plAmtIn.addEventListener("input", function(){
-    var v = parseFloat(plAmtIn.value);
-    state.plAmt = (isFinite(v) && v > 0) ? v : 0;
-    plAmtIn.style.borderColor = "";
+  var surItems = document.getElementById("surItems");
+  surItems.innerHTML = SURCHARGES.map(function(s){
+    return '<label class="chkline"><input type="checkbox" data-s="' + s.id + '"> ' + s.t +
+      '<small>' + (s.pct ? "+" + s.pct + "% of gray structure" : "+Rs " + s.sft + " / SFT") + '</small></label>';
+  }).join("");
+  surItems.addEventListener("change", function(e){
+    var id = e.target.getAttribute("data-s");
+    if(id){ state.sur[id] = e.target.checked; render(); }
+  });
+
+  var dcChk = document.getElementById("dcOn"), dcAmtIn = document.getElementById("dcAmt");
+  dcAmtIn.value = state.dcAmt;
+  dcChk.addEventListener("change", function(){ state.dc = dcChk.checked; document.getElementById("dcWrap").hidden = !state.dc; render(); });
+  dcAmtIn.addEventListener("input", function(){
+    var v = parseFloat(dcAmtIn.value);
+    state.dcAmt = (isFinite(v) && v > 0) ? v : 0;
+    dcAmtIn.style.borderColor = "";
     render();
+  });
+
+  var plChk = document.getElementById("plOn"), plAreaIn = document.getElementById("plArea"), plRateIn = document.getElementById("plRate");
+  plChk.addEventListener("change", function(){ state.pl = plChk.checked; render(); });
+  [[plAreaIn, "plArea"], [plRateIn, "plRate"]].forEach(function(f){
+    f[0].addEventListener("input", function(){
+      var v = parseFloat(f[0].value);
+      state[f[1]] = (isFinite(v) && v > 0) ? v : 0;
+      f[0].style.borderColor = "";
+      render();
+    });
   });
 
   var daysIn = document.getElementById("days"), dDaysIn = document.getElementById("dDays");
@@ -1695,10 +1839,11 @@ table.qt tr.sub td{background:#F4F8FC;font-weight:600;color:var(--navy)}
     document.getElementById("lBmtG").textContent = "@ RS " + rateTxt(r.bg) + " / SFT";
     document.getElementById("lBmtF").textContent = "@ RS " + rateTxt(r.bf) + " / SFT";
 
-    var grayPart = (showG ? g : 0) + (showG ? bg : 0) + plCost();
+    var sT = surTotal(), eT = extCost();
+    var grayPart = (showG ? g : 0) + (showG ? bg : 0) + plCost() + sT;
     var finPart  = (showF ? f : 0) + (showF ? bf : 0);
     var ext = extList();
-    var dFee = designFee(), xT = extrasTotal();
+    var dFee = designFee(), xT = extrasTotal() + eT;   // external works ride with extra items in totals and instalments
     var total = grayPart + finPart + dFee + xT;
 
     // design services: forced on for a design-only quotation, optional on construction scopes
@@ -1714,7 +1859,7 @@ table.qt tr.sub td{background:#F4F8FC;font-weight:600;color:var(--navy)}
     document.getElementById("lDes").textContent = dFee ? sft(designArea()) + " @ RS " + state.dRate.toLocaleString("en-US") : "RATE PER SFT NEEDED";
     var xl = extrasList();
     document.getElementById("rowX").hidden = !xl.length;
-    document.getElementById("oX").textContent = rs(xT);
+    document.getElementById("oX").textContent = rs(extrasTotal());
     document.getElementById("lX").textContent = xl.length + (xl.length > 1 ? " ITEMS" : " ITEM");
     document.getElementById("extField").hidden = !hasBuild();
 
@@ -1725,11 +1870,24 @@ table.qt tr.sub td{background:#F4F8FC;font-weight:600;color:var(--navy)}
       : state.scope === "design" ? "Plinth beam is construction work, so it is not part of a design-only quotation."
       : "Not every site needs one. When ticked, the amount is added to the cost summary, the total and the payment schedule as a separate line.";
     document.getElementById("rowPl").hidden = !plOn();
-    document.getElementById("oPl").textContent = plCost() ? rs(plCost()) : "Enter amount";
+    document.getElementById("oPl").textContent = plCost() ? rs(plCost()) : "Enter area & rate";
+    document.getElementById("lPl").textContent = plCost()
+      ? sft(state.plArea) + " @ RS " + state.plRate.toLocaleString("en-US") + " · GRAY STRUCTURE" : "AREA × RATE · GRAY STRUCTURE";
+    document.getElementById("plCalc").textContent = plCost()
+      ? sft(state.plArea) + " × Rs " + state.plRate.toLocaleString("en-US") + " = " + rs(plCost()) + "."
+      : "Enter the plinth beam area and rate; the cost is calculated as area × rate.";
 
     document.getElementById("rowExt").hidden = !ext.length;
-    document.getElementById("oExt").textContent = "In scope";
-    document.getElementById("lExt").textContent = ext.length + (ext.length > 1 ? " ITEMS" : " ITEM") + " · WITHIN RATES";
+    var extUnpriced = extLines().filter(function(x){ return !x.amt; }).length;
+    document.getElementById("oExt").textContent = eT ? rs(eT) : "Enter amounts";
+    document.getElementById("lExt").textContent = ext.length + (ext.length > 1 ? " ITEMS" : " ITEM") + (extUnpriced ? " · " + extUnpriced + " NOT PRICED" : " · LUMP SUM");
+
+    var sl = surLines();
+    document.getElementById("surField").hidden = !hasG();
+    document.getElementById("rowSur").hidden = !sl.length;
+    document.getElementById("oSur").textContent = rs(sT);
+    document.getElementById("lSur").textContent = sl.map(function(s){ return s.t.toUpperCase(); }).join(" · ");
+    document.getElementById("dcField").hidden = !hasBuild();
 
     document.getElementById("oGray").textContent = showG ? rs(g) : "— not in scope";
     document.getElementById("oFin").textContent  = showF ? rs(f) : "— not in scope";
@@ -1816,7 +1974,8 @@ table.qt tr.sub td{background:#F4F8FC;font-weight:600;color:var(--navy)}
       (extrasTotal() ? ", extra items " + rs(extrasTotal()) : "") +
       (state.bmt ? " plus a " + sft(state.bmtArea || 0) + " basement" : "") +
       (plCost() ? ", plinth beam " + rs(plCost()) : "") +
-      (extList().length ? ", with external works in scope" : "") +
+      (extList().length ? ", external works " + rs(extCost()) : "") +
+      (surTotal() ? ", site surcharges " + rs(surTotal()) : "") +
       " — " + rs(total) + " total. Adjust the estimator to reprice.";
   }
 
@@ -1992,45 +2151,100 @@ table.qt tr.sub td{background:#F4F8FC;font-weight:600;color:var(--navy)}
     "Passenger lift, solar PV system and net metering","Swimming pool, filtration plant and pool deck",
     "Home automation, CCTV, access control and structured cabling","Air conditioning, generator, UPS and stabilisers",
     "Furniture, curtains, blinds and loose furnishings","Any specification above the standard schedule above"];
+  // construction terms; entries tagged G apply only when gray structure is in scope
   var TERMS = [
-    "Basis of measurement — all quantities are measured on covered area only, as shown on the approved drawings. External works — boundary wall, main gate, safety grills, driveway and landscaping — are part of this contract only where listed in the scope of work above.",
+    "Basis of measurement — quantities are measured on covered area as set out in the measurement rules above. External works — boundary wall, main gate, safety grills, driveway and landscaping — are part of this contract only where priced in the cost summary.",
     "This quotation is valid for 30 days from the date of issue. Rates are subject to revision thereafter.",
-    "Rates are based on the standard specification and material schedule stated above. Any change in specification, design or covered area will be re-measured and re-quoted.",
+    "Rates are based on the specification, bill of materials and design assumptions stated above. Any change in specification, design or covered area will be re-measured and re-quoted.",
     "Government taxes, duties and levies applicable at the time of billing are extra unless expressly included.",
     "Payment is released against completed and inspected stages as per the payment schedule. Work on the next stage begins after clearance of the instalment due.",
     "Basement rates are indicative and will be confirmed after a geotechnical soil investigation report.",
-    "Water and electricity at site during construction are to be arranged by the client, or will be billed at actuals.",
     "The completion period stated above runs from the date of mobilisation and is subject to timely payments, timely approval of drawings and material selections, and force majeure events. Delays attributable to the client extend the programme day for day.",
-    "Any variation or additional work must be approved in writing before execution and will be billed with the following instalment.",
-    "Material brands are as per the approved schedule. All reinforcement steel is Grade 60 (60,000 psi). Equivalent alternates may be proposed and are subject to written approval.",
-    "In the event of abnormal escalation in the price of cement, steel or other primary materials, rates shall be reviewed by mutual consent.",
+    "Any variation or additional work must be approved in writing before execution, and is priced at the variation rates above or, where no rate is listed, at agreed item rates. It is billed with the following instalment.",
+    "Material brands are as per the bill of materials. All reinforcement steel is Grade 60 (60,000 psi). Equivalent alternates may be proposed and are subject to written approval.",
+    {G:true, t:"Material price basis — rates are based on cement at Rs " + BENCH.cement.toLocaleString("en-US") + " per bag, Grade 60 steel at Rs " + BENCH.steel + " per kg and 1st class bricks at Rs " + BENCH.bricks.toLocaleString("en-US") + " per 1,000. Steel is included up to " + BENCH.steelKg + " kg per SFT of covered area (" + BENCH.steelKgBmt + " kg per SFT in the basement); steel required beyond this is billed at actual cost. If the market price of these materials changes from the basis above, the difference is adjusted up or down on quantities still to be procured. No escalation applies where the client pays 70% or more of the contract value in advance."},
+    "The client or their appointed engineer may inspect workmanship and materials at any stage. Any rework required due to unsatisfactory workmanship or substandard material is carried out at ACCO's cost.",
+    "All site instructions, changes and complaints are given through ACCO's site in-charge, not directly to labour or subcontractors, so that every change is recorded and priced before it is built.",
     "A defects liability period of twelve months from the date of handover applies to workmanship.",
-    "ACCO provides a 10-year structural warranty on the RCC frame structure — foundation, columns, beams and roof slab — from the date of handover, covering defects in structural design and workmanship. This warranty excludes damage from natural disasters, unauthorised structural alterations, additional loads not accounted for in the approved design, or lack of routine maintenance."
+    {G:true, t:"ACCO provides a 10-year structural warranty on the RCC frame structure — foundation, columns, beams and roof slab — from the date of handover, covering defects in structural design and workmanship. This warranty excludes damage from natural disasters, unauthorised structural alterations, additional loads not accounted for in the approved design, or lack of routine maintenance."}
   ];
+  // finishing-stage items that sit outside a gray-structure-only contract
+  var GRAY_ONLY_EXCL = "Finishing-stage items — electrical DB boxes, HVAC copper piping, manhole covers, kitchen, vanity and store slabs, planters and terrace landscaping";
 
-  function specRows(filterScope){
-    var scopes = getActiveScopes();
-    var out = "";
-    Object.keys(BRANDS).forEach(function(cat){
-      var sc = BRAND_SCOPES[cat] || "finish";
-      if(filterScope){
-        if(sc !== filterScope) return;
-      } else {
-        if(sc === "gray" && !scopes.gray) return;
-        if(sc === "finish" && !scopes.finish) return;
-      }
-
-      out += '<tr><td class="k" colspan="2" style="background:#EAF1FA;font-family:\'IBM Plex Sans\',sans-serif;font-weight:700;' +
-             'font-size:9.2px;letter-spacing:.07em;text-transform:uppercase">' + esc(cat) + '</td></tr>';
-      BRANDS[cat].forEach(function(r){
-        var vals = r.v.map(function(v){ return esc(v.split("|")[0]); }).join(r.spec ? "; " : ", ");
-        out += '<tr><td class="k">' + esc(r.t) + '</td><td>' + vals + '</td></tr>';
-      });
-    });
-    if(!out){
-      out = '<tr><td colspan="2" style="text-align:center;color:#5A6B82;padding:10px">No material specifications applicable for the selected scope.</td></tr>';
+  // ── bill of materials & technical specifications (quotation) — [item, specification & brand, ratio / standard, status]
+  var BOM = {
+    gray: [
+      ["Site layout & levels", "Plot demarcation, benchmark and centre-line marking as per the working drawings", "As per drawings", "Included"],
+      ["Anti-termite treatment", "Chemical soil treatment (Fipronil-based) to foundation trenches and plinth fill, with service warranty certificate", "Foundation & plinth", "Included"],
+      ["Excavation & PCC", "Excavation to structural drawing; 6\" lean concrete under footings, compacted with compactor", "PCC 1:4:8", "Included"],
+      ["Foundation masonry & DPC", "Brick foundation in cement mortar; 2\" PCC damp-proof course with membrane sheet on internal and external walls", "Mortar 1:4 · DPC 1:1.5:3", "Included"],
+      ["Bricks", "1st class (Awal) kiln-burnt solid clay bricks, sharp edges and uniform size; 9\" and 4.5\" walls", "1st class", "Included"],
+      ["Cement", "DG Cement, Bestway or Maple Leaf — fresh OPC factory stock", "Masonry 1:4 · Plaster 1:4", "Included"],
+      ["Sand", "Lawrencepur or Chenab sand for concrete and plaster; Ravi sand for masonry and filling", "Washed & screened", "Included"],
+      ["Crush", "Margalla or Sargodha crush, ½\" and ¾\" down, screened and washed", "Graded aggregate", "Included"],
+      ["Steel reinforcement", "Grade 60 deformed bars — Mughal, Amreli or Ittefaq, as per structural drawings", "60,000 psi · up to " + BENCH.steelKg + " kg/SFT", "Included"],
+      ["RCC concrete", "Columns 4,000 psi; raft, beams, slabs and stairs 3,000 psi (28-day strength); slabs 6\" or per structural design", "Machine-mixed, vibrated", "Included"],
+      ["Formwork / shuttering", "Steel plate shuttering with steel props for slabs, beams and columns", "Steel shuttering", "Included"],
+      ["Cement plaster", "Internal and external wall plaster, ½\" to ¾\" thick", "1:4", "Included"],
+      ["RCC shades", "Window and door shades as per the elevation drawings", "RCC projection", "Included"],
+      ["Electrical conduits", "Concealed heavy-duty PVC conduits ¾\" to 2\" in slabs and walls; PVC fan, light and ceiling boxes; switch boxes", "High density", "Included"],
+      ["Water supply piping", "Hot and cold PPRC lines to all bathrooms and kitchen — Master, Popular or Dadex", "PPRC PN-20", "Included"],
+      ["Sewer & rainwater piping", "uPVC sewer, internal drainage and 4\" rainwater pipes — Master, Popular or Dadex; leak-drain chips and 1\" pipe under sunken washrooms", "uPVC medium", "Included"],
+      ["Water tanks", "Underground RCC water tank and overhead tank as per drawings, with main GI supply line", "Waterproofed RCC", "Included"],
+      ["Roof treatment", "2 coats bitumen, polythene sheet, 3\"–4\" earth, brick tiles grouted 1:3, gola along parapet, slopes and khurras to rain outlets", "Multi-layer", "Included"],
+      ["Parapet & mumty", "Parapet up to 3'-0\", mumty up to 9'-6\", in brick masonry with plaster", "As per drawings", "Included"],
+      ["Underfloor PCC", "PCC base under ground floor flooring, inside the house", "1:2:4", "Included"],
+      ["Roof heat insulation", "XPS / Jumbolon insulation board under roof tiles", "Client upgrade", "Optional"],
+      ["Steel stairs", "All stairs are in RCC; steel stairs are not part of the contract", "—", "Excluded"]
+    ],
+    bmt: [
+      ["Basement excavation & shoring", "Excavation to basement level with shoring as required; anti-termite spray after excavation", "As per drawings", "Included"],
+      ["Basement raft & retaining walls", "RCC raft and 9\" RCC retaining walls in sulphate-resisting (SRC) cement, with 9\" PVC water stopper at joints", "Steel up to " + BENCH.steelKgBmt + " kg/SFT", "Included"],
+      ["Basement waterproofing", "External plaster, 2 coats bitumen, polythene sheet and taper concrete gola along the retaining walls — Sika, Fosroc or Ultra Chemicals", "Multi-layer", "Included"],
+      ["Neighbour protection", "Safety walls or other protection of neighbouring buildings during excavation", "—", "By client"]
+    ],
+    finish: [
+      ["Floor & wall tiles", "Master, Shabbir, Ghani, Orient or RAK Ceramics", "Standard range", "Included"],
+      ["Marble", "Ziarat White, Botticino or Verona on stairs, sills and as per drawings", "Polished", "Included"],
+      ["Paint", "ICI Dulux, Berger or Nippon — putty, primer and finish coats", "Emulsion / weather shield", "Included"],
+      ["False ceiling", "POP (Plaster of Paris), Gyproc or Knauf as per the ceiling drawing", "As per design", "Included"],
+      ["Door frames", "MS pressed-steel door frames, back-filled with concrete", "16 gauge", "Included"],
+      ["Doors", "Ash wood, Deodar or engineered wood; PVC doors in bathrooms", "Solid / engineered", "Included"],
+      ["Windows", "uPVC (Koemmerling or Wintech) or powder-coated aluminium", "With glass", "Included"],
+      ["Glass", "Ghani Glass or Tariq Glass", "As per schedule", "Included"],
+      ["Kitchen", "Interwood, Kitchen Care or premium MDF kitchen", "Laminated", "Included"],
+      ["Wardrobes", "MDF or HDF laminated wardrobes", "Laminated", "Included"],
+      ["Hardware", "Hafele, Hettich or Yale", "Standard", "Included"],
+      ["Electrical wiring", "Pakistan Cables, Fast Cables or Newage Cables", "Copper", "Included"],
+      ["Switches & DB", "Schneider, Clipsal or Panasonic switches; Schneider, ABB or Siemens distribution boards", "Standard", "Included"],
+      ["Lighting", "Philips, Osram or LEDVANCE", "LED", "Included"],
+      ["Sanitary ware", "Porta, Sonex or Faisal Sanitary (Grohe as premium upgrade)", "Standard range", "Included"],
+      ["Bathroom accessories", "Sonex, Faisal or Grohe", "Standard range", "Included"]
+    ],
+    ext: {
+      "Boundary wall": ["Boundary wall", "Up to 6'-0\" high; 9\" brick below DPC, 4.5\" above with RCC pillars and coping, plastered", "Max 6'-0\" high"],
+      "Main gate — MS, 16 gauge": ["Main gate", "MS main gate fabricated, fixed and anchored into the structure", "16 gauge"],
+      "Safety grills": ["Safety grills", "MS safety grills to windows as per drawing", "MS"],
+      "Driveway": ["Driveway, porch & passages", "PCC driveway ramp, porch apron and side passages", "1:2:4"],
+      "Landscaping": ["Landscaping", "Lawn preparation and planting as per the landscape layout", "As per layout"]
     }
-    return out;
+  };
+  // which BOM sections apply to the quotation, given scope, basement and external works
+  function bomHtml(showG, showF, ext){
+    var out = "";
+    function grp(t){ out += '<tr><td colspan="4" style="background:#EAF1FA;font-weight:700;font-size:9.2px;letter-spacing:.07em;text-transform:uppercase;color:#003478">' + esc(t) + '</td></tr>'; }
+    function line(rw){
+      var st = rw[3] || "Included";
+      var col = st === "Included" ? "#1E7B3A" : st === "Optional" ? "#0057B8" : "#B3261E";
+      out += '<tr><td><b style="color:#003478">' + esc(rw[0]) + '</b></td><td>' + esc(rw[1]) + '</td><td>' + esc(rw[2]) + '</td>' +
+             '<td style="text-align:center;font-weight:700;color:' + col + '">' + esc(st) + '</td></tr>';
+    }
+    if(showG){ grp("Gray structure"); BOM.gray.forEach(line); }
+    if(showG && state.bmt){ grp("Basement"); BOM.bmt.forEach(line); }
+    if(showF){ grp("Finishing"); BOM.finish.forEach(line); }
+    if(ext.length){ grp("External works"); ext.forEach(function(x){ var rw = BOM.ext[x]; if(rw) line(rw.concat(["Included"])); }); }
+    return '<table class="qt"><thead><tr><th style="width:22%">Item</th><th>Specification &amp; brand</th><th style="width:18%">Ratio / standard</th><th style="width:11%;text-align:center">Status</th></tr></thead><tbody>' +
+      (out || '<tr><td colspan="4" style="text-align:center;color:#5A6B82">No material specifications apply to the selected scope.</td></tr>') + '</tbody></table>';
   }
 
   // design-only quotation: exclusions and terms (construction quotations use EXCLUSIONS and TERMS above)
@@ -2063,8 +2277,10 @@ table.qt tr.sub td{background:#F4F8FC;font-weight:600;color:var(--navy)}
     var g = a*r.g, f = a*r.f, bg = ba*r.bg, bf = ba*r.bf;
     var ext = extList();
     var pl = showG ? plCost() : 0, hasPl = showG && plOn();
-    var dFee = designFee(), xs = extrasList(), xT = extrasTotal();
-    var construction = (showG ? g+bg : 0) + (showF ? f+bf : 0) + pl;
+    var sl = showG ? surLines() : [], sT = sl.reduce(function(t, x){ return t + x.amt; }, 0);
+    var el = extLines();
+    var dFee = designFee(), xs = extrasList(), xT = extrasTotal() + extCost();   // external works are billed like extra items
+    var construction = (showG ? g+bg : 0) + (showF ? f+bf : 0) + pl + sT;
     var total = construction + dFee + xT;
     // construction instalments cover construction + extra items; design stages cover the design fee (+ extra items on a design-only quote)
     var buildPay = build ? construction + xT : 0, designPay = dOn ? dFee + (build ? 0 : xT) : 0;
@@ -2092,34 +2308,40 @@ table.qt tr.sub td{background:#F4F8FC;font-weight:600;color:var(--navy)}
       sr++; rows += '<tr><td class="c">'+sr+'</td><td><b>'+title+'</b>'+qd(desc)+'</td><td class="n">'+qty+'</td><td class="n">'+rate+'</td><td class="n">'+rs(amt)+'</td></tr>';
     }
     if(showG) row("Gray structure", "Complete RCC structural shell — foundation to plastered roofed building", n0(a), rateTxt(r.g), g);
-    if(hasPl) row("Plinth beam", "RCC plinth beam over the foundation, below the ground floor walls", "—", "Lump sum", pl);
+    sl.forEach(function(s){ row("Site surcharge — " + esc(s.t), esc(s.d), s.qty, s.rate, s.amt); });
+    if(hasPl) row("Plinth beam", "RCC plinth beam over the foundation, below the ground floor walls", n0(state.plArea),
+                  state.plRate.toLocaleString("en-US", {maximumFractionDigits:2}), pl);
     if(showF) row("Standard finishing", "Full finishing package to move-in condition", n0(a), rateTxt(r.f), f);
     if(state.bmt && showG) row("Basement — gray structure", "Excavation, shoring, raft, retaining walls, waterproofing, slab", n0(ba), rateTxt(r.bg), bg);
     if(state.bmt && showF) row("Basement — finishing", "Floor finish, paint, doors, lighting, power, drainage, ventilation", n0(ba), rateTxt(r.bf), bf);
     if(dOn) row("Design services — architecture, structure, MEP and 3D", "Drawings as listed in the scope of work", n0(designArea()),
                 state.dRate.toLocaleString("en-US", {maximumFractionDigits:2}), dFee);
+    el.forEach(function(x){ var b = BOM.ext[x.t]; row("External works — " + esc(b ? b[0] : x.t), esc(b ? b[1] : "As per drawings"), "—", "Lump sum", x.amt); });
     xs.forEach(function(x){ row(esc(x.d.trim()), "Extra item", "—", "Lump sum", x.amt); });
 
     var qtyTotal = a + ba;
     var blended  = qtyTotal ? Math.round(total/qtyTotal) : 0;
 
     // ── payment schedules: construction stages, and design stages when design is quoted
+    // stages carrying a verification trigger (v) get an extra column saying what must be complete before invoicing
     function payTable(stages, amount, title){
-      var running = 0, out = "";
+      var running = 0, out = "", trig = stages.some(function(m){ return m.v; });
       stages.forEach(function(m, i){
         var amt = (i === stages.length-1) ? Math.round(amount)-running : Math.round(amount*m.p/100);
         running += amt;
-        out += '<tr><td class="c">'+(i+1)+'</td><td>'+esc(m.s)+'</td><td class="n">'+m.p+'%</td><td class="n">'+rs(amt)+'</td></tr>';
+        out += '<tr><td class="c">'+(i+1)+'</td><td><b>'+esc(m.s)+'</b></td>'+(trig ? '<td>'+esc(m.v || "")+'</td>' : '')+
+          '<td class="n">'+m.p+'%</td><td class="n">'+rs(amt)+'</td></tr>';
       });
-      return '<table class="qt" style="margin-bottom:8px"><thead><tr><th class="c">SR</th><th>'+title+'</th><th class="n">%age</th><th class="n">Amount (Rs)</th></tr></thead><tbody>'+out+
-        '<tr class="sub"><td class="c">—</td><td>TOTAL</td><td class="n">100%</td><td class="n">'+rs(amount)+'</td></tr></tbody></table>';
+      return '<table class="qt" style="margin-bottom:8px"><thead><tr><th class="c">SR</th><th>'+title+'</th>'+(trig ? '<th>Verification trigger</th>' : '')+
+        '<th class="n">%age</th><th class="n">Amount (Rs)</th></tr></thead><tbody>'+out+
+        '<tr class="sub"><td class="c">—</td><td'+(trig ? ' colspan="2"' : '')+'>TOTAL</td><td class="n">100%</td><td class="n">'+rs(amount)+'</td></tr></tbody></table>';
     }
     var payHtml = (build ? payTable(PAYMENTS, buildPay, dOn ? "Construction stage" : "Scope of work") : "") +
                   (dOn ? payTable(designPayments(), designPay, "Design fee") : "");
     var payNote = build
       ? "Each instalment falls due on completion of the stage against it, verified on site before invoicing. " +
         (state.bmt ? "For the basement, the plinth and ground wall stages are read as basement raft, basement walls and basement slab." : "Mobilisation advance is payable on signing of the contract.") +
-        (xT ? " Extra items are included in the construction instalments." : "")
+        (xT ? " External works and extra items are included in the construction instalments." : "")
       : designPayText() + (xT ? " Extra items are included in the design " + (state.dPayMode === "advance" ? "advance payment." : "instalments.") : "");
     if(build && dOn) payNote += " " + designPayText();
 
@@ -2129,10 +2351,16 @@ table.qt tr.sub td{background:#F4F8FC;font-weight:600;color:var(--navy)}
     var quoteExclusions = !build ? DESIGN_EXCLUSIONS : EXCLUSIONS.slice(0, -1)
       .concat(showG && !hasPl ? ["Plinth beam"] : [])
       .concat(extMissing.length ? ["External works — " + extMissing.join(", ")] : [])
+      .concat(showG ? ["Steel stairs — all stairs are built in RCC"] : [])
+      .concat(showG && !showF ? [GRAY_ONLY_EXCL] : [])
       .concat(EXCLUSIONS.slice(-1));
     var extraTerms = document.getElementById("xTerms").value.split(/\r?\n/).map(function(t){ return t.trim(); }).filter(Boolean);
+    var dcTerm = dcOn() ? ["Delay compensation — if every instalment has been paid on schedule and ACCO does not hand over within the completion period, ACCO will pay the client " +
+      rs(state.dcAmt) + " for each month of delay. If the client delays any instalment beyond its due date, the client will pay ACCO the same " + rs(state.dcAmt) +
+      " per month of delay, and the programme is extended accordingly. Delays from force majeure, client-requested variations or late approvals are excluded."] : [];
     var quoteTerms = (!build ? DESIGN_TERMS.map(function(t){ return t === "@@DESIGN_PAY@@" ? designPayText() : t; })
-      : TERMS.filter(function(t, idx){ return !(!showG && idx === 12); })
+      : TERMS.filter(function(t){ return typeof t === "string" || showG; }).map(function(t){ return typeof t === "string" ? t : t.t; })
+      .concat(dcTerm)
       .concat(dOn ? ["The design fee covers the drawings listed in the scope of work. " + designPayText() + " Changes to an approved concept are charged as additional design work."] : []))
       .concat(dhaSubmission() ? [DHA_NOTE] : [])
       .concat(extraTerms);
@@ -2159,18 +2387,22 @@ table.qt tr.sub td{background:#F4F8FC;font-weight:600;color:var(--navy)}
         : '<tr><td>Drawings to be confirmed.</td></tr>') + '</tbody></table>' +
       (dhaSubmission() ? '<div class="inwords" style="border-top:0"><b>Note</b>' + esc(DHA_NOTE) + '</div>' : '') + '</div>' : '';
 
-    // ── material specification (construction only)
-    var specHtml = "";
-    if(showG){
-      specHtml += '<div style="' + (showF ? 'margin-bottom:14px;' : '') + '">'+ H4 + 'Gray structure</h4>'+
-        '<table class="spec"><tbody>'+specRows("gray")+'</tbody></table></div>';
-    }
-    if(showF){
-      specHtml += '<div>'+ H4 + 'Standard finishing</h4><table class="spec"><tbody>'+specRows("finish")+'</tbody></table></div>';
-    }
-    if(ext.length){
-      specHtml += '<div style="margin-top:14px">'+ H4 + 'External works</h4><table class="spec"><tbody>'+specRows("ext")+'</tbody></table></div>';
-    }
+    // ── bill of materials & technical specifications (construction only)
+    var specHtml = bomHtml(showG, showF, ext);
+
+    // ── measurement rules and design assumptions (construction only; assumptions are structural, so gray scopes)
+    function ul(list){ return '<ul class="qlist" style="columns:1">' + list.map(function(x){ return '<li>' + esc(x) + '</li>'; }).join('') + '</ul>'; }
+    var measureHtml = '<div class="qcols"' + (showG ? '' : ' style="grid-template-columns:1fr"') + '>' +
+      '<div><h4>Measurement rules</h4>' + ul(showG ? MEASURE : MEASURE.slice(0, 1).concat(MEASURE.slice(-1))) + '</div>' +
+      (showG ? '<div><h4>Design assumptions</h4>' + ul(ASSUME) + '</div>' : '') + '</div>';
+
+    // ── variation rates and client responsibilities
+    var varHtml = '<table class="qt"><thead><tr><th class="c">SR</th><th>Item</th><th>Rate</th><th>Basis</th></tr></thead><tbody>' +
+      variationRates().filter(function(v, i){ return showG || i === 7 || i === 8; })   // finishing-only: just the electrical and gas point rates
+        .map(function(v, i){ return '<tr><td class="c">' + (i+1) + '</td><td>' + esc(v[0]) + '</td><td class="n" style="text-align:left">' + esc(v[1]) + '</td><td>' + esc(v[2]) + '</td></tr>'; }).join('') +
+      '</tbody></table>';
+    var respHtml = '<ol class="terms">' + CLIENT_RESP.filter(function(x, i){ return state.bmt || i !== 4; })
+      .map(function(x){ return '<li>' + esc(x) + '</li>'; }).join('') + '</ol>';
 
     // ── completion: construction days from mobilisation; design days from the advance payment
     var completion = build
@@ -2235,12 +2467,21 @@ table.qt tr.sub td{background:#F4F8FC;font-weight:600;color:var(--navy)}
       '<tr class="sub"><td>TOTAL PROJECT DURATION</td><td class="n">'+tlTotal+' days</td><td>&asymp; '+months(tlTotal)+' months'+(build && dOn ? ', design followed by construction' : '')+'</td></tr>'+
       '</tbody></table>'+
       '<div class="inwords" style="border-top:0"><b>Note</b>Durations are in calendar days and assume timely payments, timely approval of drawings'+
-        (build ? ' and material selections, and normal weather. Finishing trades overlap the structural programme from the ground floor slab onward.' : ' by the client.')+'</div></div>'+
+        (build ? ' and material selections, and normal weather. Finishing trades overlap the structural programme from the ground floor slab onward.' : ' by the client.')+
+        (build && showG ? ' Curing is built into the programme: slabs are water-cured for at least 14 days and columns and walls for 7 days before they are loaded.' : '')+'</div></div>'+
 
     head("Scope of work")+ buildScopeHtml + designScopeHtml +'</div>'+
 
-    (build ? head("Material specification")+ specHtml +
-      '<div class="inwords" style="margin-top:6px;border-top:1px solid #C9D6E6"><b>Note</b>Final brand selection within each approved category is made jointly with the client before procurement.</div></div>' : '')+
+    (build ? head("Bill of materials &amp; technical specifications")+ specHtml +
+      '<div class="inwords" style="margin-top:6px;border-top:1px solid #C9D6E6"><b>Note</b>Final brand selection within each approved category is made jointly with the client before procurement. Items marked Optional are priced on request; items marked Excluded or By client are not part of this contract.</div></div>' : '')+
+
+    (build ? head("Measurement rules &amp; design assumptions")+ measureHtml +
+      (showG ? '<div class="inwords" style="border-top:0"><b>Note</b>Work beyond these assumptions is charged at the variation rates below.</div>' : '')+'</div>' : '')+
+
+    (build ? head("Rates for variations &amp; additions")+ varHtml +
+      '<div class="inwords" style="border-top:0"><b>Note</b>Applies only to work the client requests in writing after signing. Variations are paid before the work starts.</div></div>' : '')+
+
+    (build ? head("Client responsibilities")+ respHtml +'</div>' : '')+
 
     head("Exclusions")+
       '<ol class="terms">'+quoteExclusions.map(function(x){return '<li>'+esc(x)+'</li>';}).join('')+'</ol></div>'+
@@ -2251,6 +2492,10 @@ table.qt tr.sub td{background:#F4F8FC;font-weight:600;color:var(--navy)}
     '<div class="sign">'+
       '<div><div class="r">For Ahmed Construction Company</div><div class="s">Authorised signatory &nbsp;|&nbsp; Date</div></div>'+
       '<div><div class="r">Accepted by client</div><div class="s">Name, signature &amp; CNIC &nbsp;|&nbsp; Date</div></div>'+
+    '</div>'+
+    '<div class="sign" style="margin-top:22px">'+
+      '<div><div class="r">Witness 1</div><div class="s">Name, signature &amp; CNIC</div></div>'+
+      '<div><div class="r">Witness 2</div><div class="s">Name, signature &amp; CNIC</div></div>'+
     '</div>'+
 
     '<div class="qfoot"><span>Ahmed Construction Company (ACCO) &middot; Architecture, Engineering &amp; Construction &middot; 25+ years</span>'+
@@ -2267,12 +2512,13 @@ table.qt tr.sub td{background:#F4F8FC;font-weight:600;color:var(--navy)}
   }
 
   document.getElementById("qGen").addEventListener("click", function(){
-    // a ticked plinth beam needs its amount before it can go on the quotation
-    if(plOn() && !state.plAmt){
-      plAmtIn.style.borderColor = "#B3261E";
-      plAmtIn.scrollIntoView({block:"center"});
-      plAmtIn.focus();
-      document.getElementById("plHint").textContent = "Enter the plinth beam amount, or untick it, before creating the quotation.";
+    // a ticked plinth beam needs its area and rate before it can go on the quotation
+    var plMissing = plOn() ? [[plAreaIn, state.plArea], [plRateIn, state.plRate]].filter(function(f){ return !f[1]; }).map(function(f){ return f[0]; }) : [];
+    if(plMissing.length){
+      plMissing.forEach(function(el){ el.style.borderColor = "#B3261E"; });
+      plMissing[0].scrollIntoView({block:"center"});
+      plMissing[0].focus();
+      document.getElementById("plHint").textContent = "Enter the plinth beam area and rate, or untick it, before creating the quotation.";
       return;
     }
     // everything the quotation needs from the user, in form order: the first missing field is focused
@@ -2296,6 +2542,9 @@ table.qt tr.sub td{background:#F4F8FC;font-weight:600;color:var(--navy)}
       if(x.d.trim() && !x.amt) missing.push(rowEl.querySelector('[data-k="amt"]'));
       if(x.amt && !x.d.trim()) missing.push(rowEl.querySelector('[data-k="d"]'));
     });
+    // every ticked external works item needs its amount
+    extLines().forEach(function(x){ if(!x.amt) missing.push(extItems.querySelector('[data-a="' + x.i + '"]')); });
+    if(state.dc && hasBuild() && !state.dcAmt) missing.push(dcAmtIn);
     if(hasBuild() && !state.days) missing.push(daysIn);   // completion times are always entered by hand
     if(designOn() && !state.dDays) missing.push(dDaysIn);
     if(missing.length){
